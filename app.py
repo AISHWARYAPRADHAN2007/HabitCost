@@ -1,3 +1,5 @@
+from reports import convert_df
+from goals import months_to_goal
 from insights import generate_insights
 import streamlit as st
 import pandas as pd
@@ -190,6 +192,11 @@ else:
     st.divider()
 
     st.header("📋 Active Habits")
+    search = st.text_input("🔍 Search Habits", placeholder="Search by habit name...")
+
+    selected_category = st.selectbox(
+        "Filter Category", ["All"] + sorted(df["Category"].unique().tolist())
+    )
 
     habit_icons = {
         "Food": "🍔",
@@ -201,8 +208,21 @@ else:
         "Education": "📚",
         "Other": "💸",
     }
+    filtered_habits = []
 
     for index, habit in enumerate(st.session_state.habits):
+        if (
+        search.lower() in habit["Habit"].lower()
+        and (
+            selected_category == "All"
+            or habit["Category"] == selected_category
+        )
+    ):
+            
+            filtered_habits.append((index, habit))
+
+    
+    for index, habit in filtered_habits:
 
         monthly = monthly_cost(habit["Cost"], habit["Frequency"])
 
@@ -328,3 +348,114 @@ else:
     st.error(insights[1])
     st.info(insights[2])
     st.success(insights[3])
+    st.divider()
+
+    # ======================================================
+    # GOALS & NOTES
+    # ======================================================
+
+    st.divider()
+
+    st.header("📝 Goals & Notes")
+
+    # Initialize notes
+    if "notes" not in st.session_state:
+        st.session_state.notes = ""
+
+    # Goal inputs
+    goal_name = st.text_input("🎯 Goal Name", placeholder="Example: Buy a MacBook Air")
+
+    goal_amount = st.number_input(
+        "💰 Goal Amount", min_value=0.0, step=1000.0, value=0.0
+    )
+
+    # Add goal to notes
+    if st.button("➕ Add Goal to Notes"):
+
+        if goal_name.strip() == "":
+            st.warning("Please enter a goal name.")
+
+        elif goal_amount <= 0:
+            st.warning("Please enter a valid goal amount.")
+
+        else:
+
+            months = months_to_goal(total_monthly, goal_amount)
+
+            goal_text = (
+                f"\n🎯 Goal: {goal_name}\n"
+                f"💰 Target Amount: {currency.split()[0]} {goal_amount:,.0f}\n"
+                f"📅 Estimated Time: {months} month(s)\n"
+                f"{'-'*35}\n"
+            )
+
+            st.session_state.notes += goal_text
+
+            st.success("Goal added to your notes!")
+
+    # Notes area
+    st.session_state.notes = st.text_area(
+        "📝 Financial Notes",
+        value=st.session_state.notes,
+        height=250,
+        placeholder="Write your financial plans, reminders, or savings ideas here...",
+    )
+
+    # ======================================================
+    # MONTHLY BUDGET TRACKER
+    # ======================================================
+
+    st.divider()
+
+    st.header("🎯 Monthly Budget Tracker")
+
+    budget = st.number_input(
+        "Enter Monthly Budget", min_value=0.0, value=50000.0, step=1000.0
+    )
+
+    if budget > 0:
+
+        progress = min(total_monthly / budget, 1.0)
+
+        st.progress(progress)
+
+        remaining = budget - total_monthly
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.metric("Budget Used", f"{currency.split()[0]} {total_monthly:,.0f}")
+
+        with col2:
+            st.metric("Remaining", f"{currency.split()[0]} {max(remaining, 0):,.0f}")
+
+        if total_monthly > budget:
+
+            st.error(
+                f"⚠️ You are over budget by "
+                f"{currency.split()[0]} {total_monthly-budget:,.0f}"
+            )
+
+        elif progress >= 0.8:
+
+            st.warning("You're close to reaching your monthly budget.")
+
+        else:
+
+            st.success("Great! You're within your monthly budget.")
+    # ======================================================
+    # EXPORT REPORT
+    # ======================================================
+
+    st.divider()
+
+    st.header("📄 Export Report")
+
+    csv = convert_df(df)
+
+    st.download_button(
+        label="⬇ Download CSV Report",
+        data=csv,
+        file_name="habitcost_report.csv",
+        mime="text/csv",
+    )
