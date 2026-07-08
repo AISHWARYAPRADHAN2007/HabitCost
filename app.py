@@ -1,31 +1,25 @@
+from insights import generate_insights
 import streamlit as st
 import pandas as pd
 
 from calculations import *
-from charts import spending_pie_chart
-
+from charts import spending_pie_chart, category_bar_chart
 
 # ==========================================================
 # PAGE CONFIGURATION
 # ==========================================================
 
-st.set_page_config(
-    page_title="HabitCost",
-    page_icon="💸",
-    layout="wide"
-)
+st.set_page_config(page_title="HabitCost", page_icon="💸", layout="wide")
 
 
 # ==========================================================
 # CUSTOM CSS
 # ==========================================================
 
+
 def load_css():
     with open("assets/style.css") as f:
-        st.markdown(
-            f"<style>{f.read()}</style>",
-            unsafe_allow_html=True
-        )
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 
 load_css()
@@ -47,30 +41,15 @@ st.divider()
 
 st.sidebar.title("⚙️ User Profile")
 
-currency = st.sidebar.selectbox(
-    "Currency",
-    ["₹ INR", "$ USD", "€ EUR", "£ GBP", "AED"]
-)
+currency = st.sidebar.selectbox("Currency", ["₹ INR", "$ USD", "€ EUR", "£ GBP", "AED"])
 
 monthly_income = st.sidebar.number_input(
-    "Monthly Income",
-    min_value=0,
-    value=50000,
-    step=1000
+    "Monthly Income", min_value=0, value=50000, step=1000
 )
 
-hours_per_week = st.sidebar.number_input(
-    "Hours Worked Per Week",
-    min_value=1,
-    value=40
-)
+hours_per_week = st.sidebar.number_input("Hours Worked Per Week", min_value=1, value=40)
 
-investment_rate = st.sidebar.slider(
-    "Expected Investment Return (%)",
-    1,
-    20,
-    12
-)
+investment_rate = st.sidebar.slider("Expected Investment Return (%)", 1, 20, 12)
 
 
 # ==========================================================
@@ -103,10 +82,7 @@ if "habits" not in st.session_state:
 
 st.header("➕ Add a New Habit")
 
-habit_name = st.text_input(
-    "Habit Name",
-    placeholder="Example: Coffee"
-)
+habit_name = st.text_input("Habit Name", placeholder="Example: Coffee")
 
 category = st.selectbox(
     "Category",
@@ -118,26 +94,13 @@ category = st.selectbox(
         "Health",
         "Subscriptions",
         "Education",
-        "Other"
-    ]
+        "Other",
+    ],
 )
 
-cost = st.number_input(
-    "Cost",
-    min_value=0.0,
-    value=250.0,
-    step=10.0
-)
+cost = st.number_input("Cost", min_value=0.0, value=250.0, step=10.0)
 
-frequency = st.selectbox(
-    "Frequency",
-    [
-        "Daily",
-        "Weekly",
-        "Monthly",
-        "Yearly"
-    ]
-)
+frequency = st.selectbox("Frequency", ["Daily", "Weekly", "Monthly", "Yearly"])
 
 if st.button("➕ Add Habit"):
 
@@ -151,7 +114,7 @@ if st.button("➕ Add Habit"):
                 "Habit": habit_name,
                 "Category": category,
                 "Cost": cost,
-                "Frequency": frequency
+                "Frequency": frequency,
             }
         )
 
@@ -178,11 +141,7 @@ else:
     df = pd.DataFrame(st.session_state.habits)
 
     df["Monthly Cost"] = df.apply(
-        lambda row: monthly_cost(
-            row["Cost"],
-            row["Frequency"]
-        ),
-        axis=1
+        lambda row: monthly_cost(row["Cost"], row["Frequency"]), axis=1
     )
 
     df["Yearly Cost"] = df["Monthly Cost"] * 12
@@ -194,10 +153,7 @@ else:
     # ------------------------------------------------------
 
     largest_habit = df.loc[df["Monthly Cost"].idxmax()]
-    percentage = (
-        largest_habit["Monthly Cost"]
-        / df["Monthly Cost"].sum()
-    ) * 100
+    percentage = (largest_habit["Monthly Cost"] / df["Monthly Cost"].sum()) * 100
 
     st.divider()
 
@@ -209,7 +165,7 @@ else:
 
         st.metric(
             "Monthly Cost",
-            f"{currency.split()[0]} {largest_habit['Monthly Cost']:,.0f}"
+            f"{currency.split()[0]} {largest_habit['Monthly Cost']:,.0f}",
         )
 
     with leak_col2:
@@ -231,51 +187,52 @@ else:
     # ------------------------------------------------------
     # ACTIVE HABITS
     # ------------------------------------------------------
-
     st.divider()
 
     st.header("📋 Active Habits")
 
+    habit_icons = {
+        "Food": "🍔",
+        "Transport": "🚗",
+        "Entertainment": "🎬",
+        "Shopping": "🛍️",
+        "Health": "💪",
+        "Subscriptions": "📺",
+        "Education": "📚",
+        "Other": "💸",
+    }
+
     for index, habit in enumerate(st.session_state.habits):
 
-        card1, card2, card3 = st.columns([4, 2, 1])
-
-        monthly = monthly_cost(
-            habit["Cost"],
-            habit["Frequency"]
-        )
+        monthly = monthly_cost(habit["Cost"], habit["Frequency"])
 
         yearly = monthly * 12
 
-        with card1:
+        icon = habit_icons.get(habit["Category"], "💸")
 
-            st.markdown(f"### {habit['Habit']}")
+        left, middle, right = st.columns([5, 2, 1])
 
-            st.caption(
-                f"{habit['Category']} • {habit['Frequency']}"
-            )
+        with left:
 
-        with card2:
-            st.metric(
-            "Monthly Cost",
-            f"{currency.split()[0]} {monthly:,.0f}"
-        )
+            st.markdown(f"### {icon} {habit['Habit'].title()}")
 
-        st.caption(
-            f"Yearly: {currency.split()[0]} {monthly * 12:,.0f}"
-        )
+            st.caption(f"{habit['Category']} • {habit['Frequency']}")
 
-        with card3:
+            st.write(f"**Yearly Cost:** {currency.split()[0]} {yearly:,.0f}")
 
-            if st.button(
-                "🗑️",
-                key=f"delete_{index}"
-            ):
+        with middle:
+
+            st.metric("Monthly Cost", f"{currency.split()[0]} {monthly:,.0f}")
+
+        with right:
+
+            if st.button("🗑️", key=f"delete_{index}"):
 
                 st.session_state.habits.pop(index)
 
                 st.rerun()
 
+        st.divider()
     # ------------------------------------------------------
     # DETAILED BREAKDOWN
     # ------------------------------------------------------
@@ -285,17 +242,9 @@ else:
     st.header("📊 Detailed Breakdown")
 
     st.dataframe(
-        df[
-            [
-                "Habit",
-                "Category",
-                "Monthly Cost",
-                "Yearly Cost",
-                "20 Year Cost"
-            ]
-        ],
+        df[["Habit", "Category", "Monthly Cost", "Yearly Cost", "20 Year Cost"]],
         use_container_width=True,
-        hide_index=True
+        hide_index=True,
     )
 
     # ======================================================
@@ -315,33 +264,23 @@ else:
     else:
         hours_worked = 0
 
-    future_20 = future_value(
-        total_monthly,
-        investment_rate,
-        20
-    )
+    future_20 = future_value(total_monthly, investment_rate, 20)
     # ======================================================
     # UPDATE DASHBOARD
     # ======================================================
 
     monthly_card.metric(
-        "💰 Monthly Spending",
-        f"{currency.split()[0]} {total_monthly:,.2f}"
+        "💰 Monthly Spending", f"{currency.split()[0]} {total_monthly:,.2f}"
     )
 
     yearly_card.metric(
-        "📅 Yearly Spending",
-        f"{currency.split()[0]} {total_yearly:,.2f}"
+        "📅 Yearly Spending", f"{currency.split()[0]} {total_yearly:,.2f}"
     )
 
-    hours_card.metric(
-        "⏳ Hours Worked",
-        f"{hours_worked:.1f} hrs"
-    )
+    hours_card.metric("⏳ Hours Worked", f"{hours_worked:.1f} hrs")
 
     future_card.metric(
-        "📈 Future Value (20 Years)",
-        f"{currency.split()[0]} {future_20:,.0f}"
+        "📈 Future Value (20 Years)", f"{currency.split()[0]} {future_20:,.0f}"
     )
 
     # ======================================================
@@ -358,15 +297,10 @@ else:
 
     for i, year in enumerate(years):
 
-        value = future_value(
-            total_monthly,
-            investment_rate,
-            year
-        )
+        value = future_value(total_monthly, investment_rate, year)
 
         projection_cols[i].metric(
-            f"{year} Years",
-            f"{currency.split()[0]} {value:,.0f}"
+            f"{year} Years", f"{currency.split()[0]} {value:,.0f}"
         )
 
     # ======================================================
@@ -379,8 +313,18 @@ else:
 
     fig = spending_pie_chart(df)
 
-    st.plotly_chart(
-        fig,
-        use_container_width=True,
-        key="spending_breakdown_chart"
-    )
+    st.plotly_chart(fig, use_container_width=True, key="spending_breakdown_chart")
+    st.divider()
+    st.header("📊 Spending by Category")
+    category_fig = category_bar_chart(df)
+    st.plotly_chart(category_fig, use_container_width=True, key="category_chart")
+    st.divider()
+
+    st.header("💡 Smart Insights")
+
+    insights = generate_insights(df, future_20)
+
+    st.warning(insights[0])
+    st.error(insights[1])
+    st.info(insights[2])
+    st.success(insights[3])
