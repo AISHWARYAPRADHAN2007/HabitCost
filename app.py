@@ -160,6 +160,9 @@ else:
     st.divider()
 
     st.header("⚠️ Biggest Money Leak")
+    st.error(
+    f"{largest_habit['Habit']} is costing you "
+    f"{currency.split()[0]} {largest_habit['Monthly Cost']:,.0f} every month.")
 
     leak_col1, leak_col2 = st.columns([1, 2])
 
@@ -192,12 +195,31 @@ else:
     st.divider()
 
     st.header("📋 Active Habits")
-    search = st.text_input("🔍 Search Habits", placeholder="Search by habit name...")
+    search_col, filter_col, sort_col = st.columns([3, 2, 2])
 
-    selected_category = st.selectbox(
-        "Filter Category", ["All"] + sorted(df["Category"].unique().tolist())
+    with search_col:
+        search = st.text_input(
+        "🔍 Search",
+        placeholder="Search habits..."
     )
 
+    with filter_col:
+        selected_category = st.selectbox(
+        "📂 Category",
+        ["All"] + sorted(df["Category"].unique().tolist())
+    )
+
+    with sort_col:
+        sort_by = st.selectbox(
+        "↕️ Sort",
+        [
+            "Monthly Cost ↓",
+            "Monthly Cost ↑",
+            "A → Z",
+            "Z → A"
+        ]
+    )
+    
     habit_icons = {
         "Food": "🍔",
         "Transport": "🚗",
@@ -221,7 +243,39 @@ else:
             
             filtered_habits.append((index, habit))
 
+    if sort_by == "Monthly Cost (High → Low)":
+        filtered_habits.sort(
+        key=lambda x: monthly_cost(
+            x[1]["Cost"],
+            x[1]["Frequency"]
+        ),
+        reverse=True
+    )
+
+    elif sort_by == "Monthly Cost (Low → High)":
+        filtered_habits.sort(
+        key=lambda x: monthly_cost(
+            x[1]["Cost"],
+            x[1]["Frequency"]
+        )
+    )
+        
+    elif sort_by == "Alphabetical (A-Z)":
+        filtered_habits.sort(
+        key=lambda x: x[1]["Habit"].lower()
+    )
+
+    elif sort_by == "Alphabetical (Z-A)":
+        filtered_habits.sort(
+        key=lambda x: x[1]["Habit"].lower(),
+        reverse=True
+    )
+    st.caption(
+    f"Showing {len(filtered_habits)} habit(s)")
     
+    if not filtered_habits:
+        st.warning("No habits match your search.")
+   
     for index, habit in filtered_habits:
 
         monthly = monthly_cost(habit["Cost"], habit["Frequency"])
@@ -230,16 +284,18 @@ else:
 
         icon = habit_icons.get(habit["Category"], "💸")
 
-        left, middle, right = st.columns([5, 2, 1])
+        left, middle, right = st.columns([6, 2, 1])
 
         with left:
-
-            st.markdown(f"### {icon} {habit['Habit'].title()}")
-
-            st.caption(f"{habit['Category']} • {habit['Frequency']}")
-
-            st.write(f"**Yearly Cost:** {currency.split()[0]} {yearly:,.0f}")
-
+            st.markdown(
+                f"""
+        ### {icon} {habit['Habit'].title()}
+        **💰 Monthly:** {currency.split()[0]} {monthly:,.0f}
+        **📅 Yearly:** {currency.split()[0]} {yearly:,.0f}
+        """
+        )
+            st.caption(
+                f"{habit['Category']} • {habit['Frequency']}")
         with middle:
 
             st.metric("Monthly Cost", f"{currency.split()[0]} {monthly:,.0f}")
@@ -259,7 +315,7 @@ else:
 
     st.divider()
 
-    st.header("📊 Detailed Breakdown")
+    st.header("📊 Spending Summary")
 
     st.dataframe(
         df[["Habit", "Category", "Monthly Cost", "Yearly Cost", "20 Year Cost"]],
@@ -449,7 +505,8 @@ else:
 
     st.divider()
 
-    st.header("📄 Export Report")
+    st.header("📄Download Your Report")
+    st.caption("Export all your habits as a CSV File.")
 
     csv = convert_df(df)
 
@@ -459,3 +516,7 @@ else:
         file_name="habitcost_report.csv",
         mime="text/csv",
     )
+    st.divider()
+
+    st.caption(
+    "💸 HabitCost • Built with ❤️ by Aishwarya Pradhan")
