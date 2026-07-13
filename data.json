@@ -1,0 +1,19 @@
+{
+    "habits": [
+        {
+            "Habit": "COFFEE",
+            "Category": "Food",
+            "Cost": 250.0,
+            "Frequency": "Daily"
+        },
+        {
+            "Habit": "UBER",
+            "Category": "Transport",
+            "Cost": 10000.0,
+            "Frequency": "Daily"
+        }
+    ],
+    "goals": {},
+    "notes": "",
+    "budget": 0
+}

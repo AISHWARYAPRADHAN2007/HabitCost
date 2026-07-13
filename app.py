@@ -1,19 +1,19 @@
-from reports import convert_df
-from goals import months_to_goal
-from insights import generate_insights
 import streamlit as st
 import pandas as pd
 
-from calculations import *
-from charts import spending_pie_chart, category_bar_chart
+from database import supabase
+from auth import signup, login, get_user, logout
+from database import get_habits
 
-# ==========================================================
-# PAGE CONFIGURATION
-# ==========================================================
-
-st.set_page_config(page_title="HabitCost", page_icon="💸", layout="wide")
+from calculations import monthly_cost
 
 
+st.set_page_config(
+    page_title="HabitCost",
+    page_icon="💸",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
 # ==========================================================
 # CUSTOM CSS
 # ==========================================================
@@ -26,497 +26,502 @@ def load_css():
 
 load_css()
 
-
 # ==========================================================
-# TITLE
+# AUTHENTICATION
 # ==========================================================
 
-st.title("💸 HabitCost")
-st.subheader("See where your money and time are really going.")
+if "user" not in st.session_state:
+    st.session_state.user = get_user()
 
-st.divider()
+if "session" in st.session_state and st.session_state.session:
 
+    supabase.auth.set_session(
+        st.session_state.session.access_token,
+        st.session_state.session.refresh_token
+    )
+
+if st.session_state.user is None:
+
+    st.markdown("""
+    <div style="text-align:center; margin-top:30px; margin-bottom:20px;">
+        <div style="font-size:70px;">💸</div>
+        <h1 style="margin-bottom:5px;">HabitCost</h1>
+        <p style="font-size:18px;color:gray;">
+            Track habits. Understand spending. Build wealth.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown(
+        "<h2 style='text-align:center;'>Get Started</h2>",
+        unsafe_allow_html=True,
+    )
+
+    left, centre, right = st.columns([1.5, 2, 1.5])
+
+    with centre:
+
+        choice = st.selectbox(
+            "Choose an option",
+            ["Login", "Sign Up"]
+        )
+
+        email = st.text_input("Email")
+
+        password = st.text_input(
+            "Password",
+            type="password"
+        )
+
+    # -----------------------------
+    # SIGN UP
+    # -----------------------------
+    if choice == "Sign Up":
+
+        col1, col2, col3 = st.columns([1, 2, 1])
+
+        with col2:
+
+            signup_clicked = st.button(
+                "Create Account",
+                key="signup_button",
+                use_container_width=True
+            )
+
+        if signup_clicked:
+
+            response = signup(email, password)
+
+            if response:
+                st.success(
+                    "✅ Account created! Check your email to verify your account."
+                )
+
+    # -----------------------------
+    # LOGIN
+    # -----------------------------
+    else:
+
+        col1, col2, col3 = st.columns([1, 2, 1])
+
+        with col2:
+
+            login_clicked = st.button(
+                "Login",
+                key="login_button",
+                use_container_width=True
+            )
+
+        if login_clicked:
+
+            response = login(email, password)
+
+            if response and response.user:
+
+                st.session_state.user = response.user
+                st.session_state.session = response.session
+
+                supabase.auth.set_session(
+                    response.session.access_token,
+                    response.session.refresh_token
+                )
+
+                st.rerun()
+
+            else:
+
+                st.error("❌ Invalid email or password.")
+
+    st.stop()
 
 # ==========================================================
 # SIDEBAR
 # ==========================================================
 
-st.sidebar.title("⚙️ User Profile")
+import streamlit as st
 
-currency = st.sidebar.selectbox("Currency", ["₹ INR", "$ USD", "€ EUR", "£ GBP", "AED"])
 
-monthly_income = st.sidebar.number_input(
-    "Monthly Income", min_value=0, value=50000, step=1000
+# after login check
+
+username = (
+    st.session_state.user.email
+    .split("@")[0]
+    .replace(".", " ")
+    .replace("_", " ")
+    .title()
+    if st.session_state.user and st.session_state.user.email
+    else "User"
 )
 
-hours_per_week = st.sidebar.number_input("Hours Worked Per Week", min_value=1, value=40)
-
-investment_rate = st.sidebar.slider("Expected Investment Return (%)", 1, 20, 12)
+from datetime import datetime
 
 
-# ==========================================================
-# DASHBOARD
-# ==========================================================
+hour = datetime.now().hour
 
-st.header("📊 Dashboard")
+if hour < 12:
+    greeting = "Good Morning ☀️"
+elif hour < 17:
+    greeting = "Good Afternoon 🌤️"
+else:
+    greeting = "Good Evening 🌙"
 
-dashboard_col1, dashboard_col2, dashboard_col3, dashboard_col4 = st.columns(4)
-
-monthly_card = dashboard_col1.empty()
-yearly_card = dashboard_col2.empty()
-hours_card = dashboard_col3.empty()
-future_card = dashboard_col4.empty()
-
-st.divider()
-
-
-# ==========================================================
-# SESSION STATE
-# ==========================================================
-
-if "habits" not in st.session_state:
-    st.session_state.habits = []
-
-
-# ==========================================================
-# ADD HABIT
-# ==========================================================
-
-st.header("➕ Add a New Habit")
-
-habit_name = st.text_input("Habit Name", placeholder="Example: Coffee")
-
-category = st.selectbox(
-    "Category",
-    [
-        "Food",
-        "Transport",
-        "Entertainment",
-        "Shopping",
-        "Health",
-        "Subscriptions",
-        "Education",
-        "Other",
-    ],
+st.markdown(
+    f"""
+    <div style="padding:5px 0 25px 0;">
+        <h1>{greeting}, {username} 👋</h1>
+        <p style="font-size:18px; color:#9CA3AF;">
+            Small habits create big wealth.
+        </p>
+    </div>
+    """,
+    unsafe_allow_html=True,
 )
+top1, top2 = st.columns([8, 1])
 
-cost = st.number_input("Cost", min_value=0.0, value=250.0, step=10.0)
+with top2:
 
-frequency = st.selectbox("Frequency", ["Daily", "Weekly", "Monthly", "Yearly"])
+    with st.popover("⚙️ Account"):
 
-if st.button("➕ Add Habit"):
+        if st.button(
+            "⚙️ Settings",
+            use_container_width=True,
+        ):
+            st.switch_page("pages/Settings.py")
 
-    if habit_name.strip() == "":
-        st.warning("Please enter a habit name.")
+        st.divider()
 
-    else:
+        if st.button(
+            "🚪 Logout",
+            use_container_width=True,
+        ):
+            logout()
 
-        st.session_state.habits.append(
-            {
-                "Habit": habit_name,
-                "Category": category,
-                "Cost": cost,
-                "Frequency": frequency,
-            }
-        )
+            st.session_state.user = None
+            st.session_state.session = None
 
-        st.success("Habit added successfully!")
-
+            st.rerun()
 # ==========================================================
-# HABIT TABLE
+# HOME SUMMARY
 # ==========================================================
 
-st.divider()
+from database import get_habits, get_profile
+from calculations import monthly_cost, future_value
 
-st.header("📋 Your Habits")
 
-if len(st.session_state.habits) == 0:
+user_email = st.session_state.user.email
 
-    st.info("No habits added yet.")
+habits = get_habits(user_email)
+home_df = pd.DataFrame(habits)
+# ==========================================
+# HOME FINANCIAL CALCULATIONS
+# ==========================================
+
+if not home_df.empty:
+
+    home_df["Monthly Cost"] = home_df.apply(
+        lambda row: monthly_cost(
+            row["cost"],
+            row["frequency"]
+        ),
+        axis=1
+    )
+
+    total_monthly_spending = home_df["Monthly Cost"].sum()
+
+    total_habits = len(home_df)
 
 else:
 
-    # ------------------------------------------------------
-    # CREATE DATAFRAME
-    # ------------------------------------------------------
+    total_monthly_spending = 0
 
-    df = pd.DataFrame(st.session_state.habits)
+    total_habits = 0
+home_df = home_df.rename(
+    columns={
+        "habit": "Habit",
+        "category": "Category"
+    }
+)
 
-    df["Monthly Cost"] = df.apply(
-        lambda row: monthly_cost(row["Cost"], row["Frequency"]), axis=1
-    )
+if not home_df.empty:
+    home_df["Yearly Cost"] = home_df["Monthly Cost"] * 12
 
-    df["Yearly Cost"] = df["Monthly Cost"] * 12
 
-    df["20 Year Cost"] = df["Yearly Cost"] * 20
+else:
 
-    # ------------------------------------------------------
-    # BIGGEST MONEY LEAK
-    # ------------------------------------------------------
-
-    largest_habit = df.loc[df["Monthly Cost"].idxmax()]
-    percentage = (largest_habit["Monthly Cost"] / df["Monthly Cost"].sum()) * 100
-
-    st.divider()
-
-    st.header("⚠️ Biggest Money Leak")
-    st.error(
-    f"{largest_habit['Habit']} is costing you "
-    f"{currency.split()[0]} {largest_habit['Monthly Cost']:,.0f} every month.")
-
-    leak_col1, leak_col2 = st.columns([1, 2])
-
-    with leak_col1:
-
-        st.metric(
+    home_df = pd.DataFrame(
+        columns=[
+            "Habit",
+            "Category",
+            "Cost",
+            "Frequency",
             "Monthly Cost",
-            f"{currency.split()[0]} {largest_habit['Monthly Cost']:,.0f}",
-        )
-
-    with leak_col2:
-
-        st.subheader(f"💸 {largest_habit['Habit']}")
-
-        st.write(
-            f"**Yearly Cost:** "
-            f"{currency.split()[0]} "
-            f"{largest_habit['Yearly Cost']:,.0f}"
-        )
-
-        st.write(
-            f"This habit accounts for "
-            f"**{percentage:.1f}%** "
-            f"of your monthly spending."
-        )
-
-    # ------------------------------------------------------
-    # ACTIVE HABITS
-    # ------------------------------------------------------
-    st.divider()
-
-    st.header("📋 Active Habits")
-    search_col, filter_col, sort_col = st.columns([3, 2, 2])
-
-    with search_col:
-        search = st.text_input(
-        "🔍 Search",
-        placeholder="Search habits..."
-    )
-
-    with filter_col:
-        selected_category = st.selectbox(
-        "📂 Category",
-        ["All"] + sorted(df["Category"].unique().tolist())
-    )
-
-    with sort_col:
-        sort_by = st.selectbox(
-        "↕️ Sort",
-        [
-            "Monthly Cost ↓",
-            "Monthly Cost ↑",
-            "A → Z",
-            "Z → A"
+            "Yearly Cost"
         ]
     )
-    
-    habit_icons = {
-        "Food": "🍔",
-        "Transport": "🚗",
-        "Entertainment": "🎬",
-        "Shopping": "🛍️",
-        "Health": "💪",
-        "Subscriptions": "📺",
-        "Education": "📚",
-        "Other": "💸",
-    }
-    filtered_habits = []
 
-    for index, habit in enumerate(st.session_state.habits):
-        if (
-        search.lower() in habit["Habit"].lower()
-        and (
-            selected_category == "All"
-            or habit["Category"] == selected_category
-        )
-    ):
-            
-            filtered_habits.append((index, habit))
+profile = get_profile(user_email)
 
-    if sort_by == "Monthly Cost (High → Low)":
-        filtered_habits.sort(
-        key=lambda x: monthly_cost(
-            x[1]["Cost"],
-            x[1]["Frequency"]
-        ),
-        reverse=True
-    )
+monthly_budget = 0
 
-    elif sort_by == "Monthly Cost (Low → High)":
-        filtered_habits.sort(
-        key=lambda x: monthly_cost(
-            x[1]["Cost"],
-            x[1]["Frequency"]
-        )
-    )
+if profile:
+    monthly_budget = profile.get("monthly_budget", 0)
+
+    if monthly_budget is None:
+        monthly_budget = 0
         
-    elif sort_by == "Alphabetical (A-Z)":
-        filtered_habits.sort(
-        key=lambda x: x[1]["Habit"].lower()
+monthly_budget = 0
+
+if profile:
+    monthly_budget = profile.get("monthly_budget", 0)
+
+    if monthly_budget is None:
+        monthly_budget = 0
+
+currency = "₹"
+
+if profile:
+    currency = profile.get("currency", "₹ INR").split()[0]
+    investment_rate = profile.get("investment_rate", 12)
+else:
+    investment_rate = 12
+
+
+total_monthly = 0
+
+for habit in habits:
+    total_monthly += monthly_cost(
+        habit["cost"],
+        habit["frequency"]
     )
 
-    elif sort_by == "Alphabetical (Z-A)":
-        filtered_habits.sort(
-        key=lambda x: x[1]["Habit"].lower(),
-        reverse=True
+
+future = future_value(
+    total_monthly,
+    investment_rate,
+    20
+)
+
+# ==========================================
+# FINANCIAL HEALTH SCORE CALCULATION
+# ==========================================
+
+if not home_df.empty:
+
+    subscription_cost = (
+        home_df[
+            home_df["Category"] == "Subscriptions"
+        ]["Monthly Cost"]
+        .sum()
     )
-    st.caption(
-    f"Showing {len(filtered_habits)} habit(s)")
-    
-    if not filtered_habits:
-        st.warning("No habits match your search.")
-   
-    for index, habit in filtered_habits:
 
-        monthly = monthly_cost(habit["Cost"], habit["Frequency"])
+else:
+    subscription_cost = 0
 
-        yearly = monthly * 12
 
-        icon = habit_icons.get(habit["Category"], "💸")
+score = 100
 
-        left, middle, right = st.columns([6, 2, 1])
 
-        with left:
-            st.markdown(
-                f"""
-        ### {icon} {habit['Habit'].title()}
-        **💰 Monthly:** {currency.split()[0]} {monthly:,.0f}
-        **📅 Yearly:** {currency.split()[0]} {yearly:,.0f}
-        """
-        )
-            st.caption(
-                f"{habit['Category']} • {habit['Frequency']}")
-        with middle:
+# Budget overspending penalty
+if monthly_budget > 0:
 
-            st.metric("Monthly Cost", f"{currency.split()[0]} {monthly:,.0f}")
+    budget_usage = (
+        total_monthly_spending / monthly_budget
+    )
 
-        with right:
+    if budget_usage > 3:
+        score -= 50
 
-            if st.button("🗑️", key=f"delete_{index}"):
+    elif budget_usage > 2:
+        score -= 35
 
-                st.session_state.habits.pop(index)
+    elif budget_usage > 1:
+        score -= 20
 
-                st.rerun()
 
-        st.divider()
-    # ------------------------------------------------------
-    # DETAILED BREAKDOWN
-    # ------------------------------------------------------
+# High spending penalty
+if total_monthly_spending > 50000:
+    score -= 15
 
-    st.divider()
+elif total_monthly_spending > 20000:
+    score -= 5
 
-    st.header("📊 Spending Summary")
 
-    st.dataframe(
-        df[["Habit", "Category", "Monthly Cost", "Yearly Cost", "20 Year Cost"]],
+# Habit tracking bonus
+if total_habits >= 5:
+    score += 5
+
+
+# Subscription penalty
+if subscription_cost > 3000:
+    score -= 10
+
+
+score = max(0, min(score,100))
+
+st.markdown("## 📊 Financial Overview")
+card1, card2, card3, card4 = st.columns(4)
+
+
+with card1:
+    st.metric(
+        "💰 Monthly Spending",
+        f"{currency} {total_monthly:,.0f}"
+    )
+
+
+with card2:
+    st.metric(
+        "🔥 Active Habits",
+        len(habits)
+    )
+
+
+with card3:
+    st.metric(
+        "📈 20 Year Potential",
+        f"{currency} {future:,.0f}"
+    )
+with card4:
+    st.metric(
+        "🏆 Financial Score",
+        f"{score}/100"
+    )
+
+st.divider()
+
+
+st.subheader("YOUR WORKSPACE")
+st.caption("Everything you need to track, analyze, and improve your spending.")
+
+st.write("")
+
+
+col1, col2, col3 = st.columns(3)
+
+
+with col1:
+
+    if st.button(
+        "📊\n\nDASHBOARD\n\nInsights & Statistics",
         use_container_width=True,
-        hide_index=True,
+        key="home_dashboard"
+    ):
+        st.switch_page("pages/Dashboard.py")
+
+
+    if st.button(
+        "🔥\n\nHABITS\n\nManage Habits",
+        use_container_width=True,
+        key="home_habits"
+    ):
+        st.switch_page("pages/Habits.py")
+
+
+with col2:
+
+    if st.button(
+        "📈\n\nANALYTICS\n\nAnalyze your spending",
+        use_container_width=True,
+        key="home_analytics"
+    ):
+        st.switch_page("pages/Analytics.py")
+
+
+    if st.button(
+        "💹\n\nINVESTMENT\n\nFuture growth",
+        use_container_width=True,
+        key="home_investments"
+    ):
+        st.switch_page("pages/Investments.py")
+
+
+with col3:
+
+    if st.button(
+        "📄\n\nREPORTS\n\nDownload Reports",
+        use_container_width=True,
+        key="home_reports"
+    ):
+        st.switch_page("pages/Reports.py")
+
+
+    if st.button(
+        "⚙️\n\nSETTINGS\n\nProfile",
+        use_container_width=True,
+        key="home_settings"
+    ):
+        st.switch_page("pages/Settings.py")
+
+
+
+# ==========================================================
+# HOME SPENDING OVERVIEW
+# ==========================================================
+
+st.subheader("🥧 Spending Overview")
+
+
+if len(home_df) > 0:
+
+    category_spending = (
+        home_df
+        .groupby("Category")["Monthly Cost"]
+        .sum()
+        .sort_values(
+            ascending=False
+        )
     )
 
-    # ======================================================
-    # DASHBOARD CALCULATIONS
-    # ======================================================
 
-    total_monthly = df["Monthly Cost"].sum()
+    spend_col1, spend_col2 = st.columns([2, 1])
 
-    total_yearly = df["Yearly Cost"].sum()
 
-    weekly_income = monthly_income / 4
+    with spend_col1:
 
-    hourly_income = weekly_income / hours_per_week
+        for category, amount in category_spending.items():
 
-    if hourly_income > 0:
-        hours_worked = total_monthly / hourly_income
-    else:
-        hours_worked = 0
+            st.write(
+                f"**{category}**"
+            )
 
-    future_20 = future_value(total_monthly, investment_rate, 20)
-    # ======================================================
-    # UPDATE DASHBOARD
-    # ======================================================
+            st.progress(
+                float(
+                    amount /
+                    category_spending.max()
+                )
+            )
 
-    monthly_card.metric(
-        "💰 Monthly Spending", f"{currency.split()[0]} {total_monthly:,.2f}"
-    )
+            st.caption(
+                f"{currency} {amount:,.0f}/month"
+            )
 
-    yearly_card.metric(
-        "📅 Yearly Spending", f"{currency.split()[0]} {total_yearly:,.2f}"
-    )
 
-    hours_card.metric("⏳ Hours Worked", f"{hours_worked:.1f} hrs")
+    with spend_col2:
 
-    future_card.metric(
-        "📈 Future Value (20 Years)", f"{currency.split()[0]} {future_20:,.0f}"
-    )
+        top_category = category_spending.idxmax()
 
-    # ======================================================
-    # FUTURE VALUE PROJECTION
-    # ======================================================
-
-    st.divider()
-
-    st.header("📈 Future Value Projection")
-
-    years = [5, 10, 20, 30]
-
-    projection_cols = st.columns(4)
-
-    for i, year in enumerate(years):
-
-        value = future_value(total_monthly, investment_rate, year)
-
-        projection_cols[i].metric(
-            f"{year} Years", f"{currency.split()[0]} {value:,.0f}"
+        st.metric(
+            "🏆 Highest Spending Category",
+            top_category
         )
 
-    # ======================================================
-    # SPENDING BREAKDOWN
-    # ======================================================
+        st.metric(
+            "💸 Amount",
+            f"{currency} {category_spending.max():,.0f}"
+        )
 
-    st.divider()
 
-    st.header("🥧 Spending Breakdown")
+else:
 
-    fig = spending_pie_chart(df)
-
-    st.plotly_chart(fig, use_container_width=True, key="spending_breakdown_chart")
-    st.divider()
-    st.header("📊 Spending by Category")
-    category_fig = category_bar_chart(df)
-    st.plotly_chart(category_fig, use_container_width=True, key="category_chart")
-    st.divider()
-
-    st.header("💡 Smart Insights")
-
-    insights = generate_insights(df, future_20)
-
-    st.warning(insights[0])
-    st.error(insights[1])
-    st.info(insights[2])
-    st.success(insights[3])
-    st.divider()
-
-    # ======================================================
-    # GOALS & NOTES
-    # ======================================================
-
-    st.divider()
-
-    st.header("📝 Goals & Notes")
-
-    # Initialize notes
-    if "notes" not in st.session_state:
-        st.session_state.notes = ""
-
-    # Goal inputs
-    goal_name = st.text_input("🎯 Goal Name", placeholder="Example: Buy a MacBook Air")
-
-    goal_amount = st.number_input(
-        "💰 Goal Amount", min_value=0.0, step=1000.0, value=0.0
+    st.info(
+        "Add habits to view your spending breakdown."
     )
 
-    # Add goal to notes
-    if st.button("➕ Add Goal to Notes"):
 
-        if goal_name.strip() == "":
-            st.warning("Please enter a goal name.")
+st.divider()
 
-        elif goal_amount <= 0:
-            st.warning("Please enter a valid goal amount.")
 
-        else:
 
-            months = months_to_goal(total_monthly, goal_amount)
-
-            goal_text = (
-                f"\n🎯 Goal: {goal_name}\n"
-                f"💰 Target Amount: {currency.split()[0]} {goal_amount:,.0f}\n"
-                f"📅 Estimated Time: {months} month(s)\n"
-                f"{'-'*35}\n"
-            )
-
-            st.session_state.notes += goal_text
-
-            st.success("Goal added to your notes!")
-
-    # Notes area
-    st.session_state.notes = st.text_area(
-        "📝 Financial Notes",
-        value=st.session_state.notes,
-        height=250,
-        placeholder="Write your financial plans, reminders, or savings ideas here...",
-    )
-
-    # ======================================================
-    # MONTHLY BUDGET TRACKER
-    # ======================================================
-
-    st.divider()
-
-    st.header("🎯 Monthly Budget Tracker")
-
-    budget = st.number_input(
-        "Enter Monthly Budget", min_value=0.0, value=50000.0, step=1000.0
-    )
-
-    if budget > 0:
-
-        progress = min(total_monthly / budget, 1.0)
-
-        st.progress(progress)
-
-        remaining = budget - total_monthly
-
-        col1, col2 = st.columns(2)
-
-        with col1:
-            st.metric("Budget Used", f"{currency.split()[0]} {total_monthly:,.0f}")
-
-        with col2:
-            st.metric("Remaining", f"{currency.split()[0]} {max(remaining, 0):,.0f}")
-
-        if total_monthly > budget:
-
-            st.error(
-                f"⚠️ You are over budget by "
-                f"{currency.split()[0]} {total_monthly-budget:,.0f}"
-            )
-
-        elif progress >= 0.8:
-
-            st.warning("You're close to reaching your monthly budget.")
-
-        else:
-
-            st.success("Great! You're within your monthly budget.")
-    # ======================================================
-    # EXPORT REPORT
-    # ======================================================
-
-    st.divider()
-
-    st.header("📄Download Your Report")
-    st.caption("Export all your habits as a CSV File.")
-
-    csv = convert_df(df)
-
-    st.download_button(
-        label="⬇ Download CSV Report",
-        data=csv,
-        file_name="habitcost_report.csv",
-        mime="text/csv",
-    )
-    st.divider()
-
-    st.caption(
-    "💸 HabitCost • Built with ❤️ by Aishwarya Pradhan")
+st.caption(
+    "HabitCost • Version 1.0 • Built with ❤️"
+)

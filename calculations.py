@@ -70,3 +70,71 @@ def create_dashboard_data(habits):
         })
 
     return dashboard
+
+from datetime import datetime
+
+
+def should_show_habit(habit, selected_date):
+
+    frequency = habit["Frequency"]
+
+    start_date = datetime.strptime(
+        str(habit["Start_Date"]),
+        "%Y-%m-%d"
+    ).date()
+
+
+    # Nothing before habit starts
+    if selected_date < start_date:
+        return False
+
+
+    # Daily habits
+    if frequency == "Daily":
+        return True
+
+
+    # Weekly habits
+    if frequency == "Weekly":
+
+        days_difference = (
+            selected_date - start_date
+        ).days
+
+        return days_difference % 7 == 0
+
+
+    # Monthly subscriptions
+    # Show every day after starting
+    if frequency == "Monthly":
+        return True
+
+
+    # Yearly subscriptions
+    # Show every day after starting
+    if frequency == "Yearly":
+        return True
+
+
+    return False
+def financial_health_score(
+    total_monthly_spending,
+    total_habits,
+    subscription_cost
+):
+
+    score = 100
+
+    if total_monthly_spending > 50000:
+        score -= 25
+
+    elif total_monthly_spending > 20000:
+        score -= 10
+
+    if total_habits >= 5:
+        score += 5
+
+    if subscription_cost > 3000:
+        score -= 10
+
+    return max(0, min(score, 100))
