@@ -133,27 +133,41 @@ if st.session_state.user is None:
                 st.error("❌ Invalid email or password.")
     st.markdown("---")
 
-    if st.button("🔑 Forgot Password?"):
+    # Forgot Password directly below Login
+
+    if st.button(
+    "🔑 Forgot Password?",
+    key="forgot_button",
+    use_container_width=True
+    ):
 
       st.session_state.show_reset = True
-    if st.session_state.get("show_reset"):
 
-      st.subheader("Reset Password")
+
+    if st.session_state.get("show_reset"):
 
       reset_email = st.text_input(
         "Enter your email",
         key="reset_email"
     )
 
-    if st.button("Send Reset Link"):
+      if st.button(
+        "Send Reset Link",
+        key="reset_button",
+        use_container_width=True
+      ):
 
-        success, msg = reset_password(email)
+         if reset_email.strip() == "":
+            st.error("Please enter your email first.")
 
-        if success:
-            st.success(msg)
-        else:
-            st.error(msg)
+         else:
+            success, msg = reset_password(reset_email)
 
+            if success:
+                st.success(msg)
+            else:
+                st.error(msg)
+    
     st.stop()
 
 # ==========================================================
