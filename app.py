@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 from database import supabase
-from auth import signup, login, get_user, logout
+from auth import signup, login, get_user, logout, reset_password
 from database import get_habits
 
 from calculations import monthly_cost
@@ -131,6 +131,28 @@ if st.session_state.user is None:
             else:
 
                 st.error("❌ Invalid email or password.")
+    st.markdown("---")
+
+    if st.button("🔑 Forgot Password?"):
+
+      st.session_state.show_reset = True
+    if st.session_state.get("show_reset"):
+
+      st.subheader("Reset Password")
+
+      reset_email = st.text_input(
+        "Enter your email",
+        key="reset_email"
+    )
+
+    if st.button("Send Reset Link"):
+
+        success, msg = reset_password(email)
+
+        if success:
+            st.success(msg)
+        else:
+            st.error(msg)
 
     st.stop()
 
@@ -186,7 +208,7 @@ with top2:
             "⚙️ Settings",
             use_container_width=True,
         ):
-            st.switch_page("pages/Settings.py")
+            st.switch_page("pages/6_Settings.py")
 
         st.divider()
 
@@ -402,47 +424,48 @@ col1, col2, col3 = st.columns(3)
 with col1:
 
     if st.button(
-        "📊\n\nDASHBOARD\n\nInsights & Statistics",
-        use_container_width=True,
-        key="home_dashboard"
-    ):
-        st.switch_page("pages/Dashboard.py")
-
-
-    if st.button(
         "🔥\n\nHABITS\n\nManage Habits",
         use_container_width=True,
         key="home_habits"
     ):
-        st.switch_page("pages/Habits.py")
-
-
-with col2:
-
-    if st.button(
-        "📈\n\nANALYTICS\n\nAnalyze your spending",
-        use_container_width=True,
-        key="home_analytics"
-    ):
-        st.switch_page("pages/Analytics.py")
-
-
+        st.switch_page("pages/1_Habits.py")
+        
     if st.button(
         "💹\n\nINVESTMENT\n\nFuture growth",
         use_container_width=True,
         key="home_investments"
     ):
-        st.switch_page("pages/Investments.py")
+        st.switch_page("pages/4_Investments.py")
+    
 
 
-with col3:
-
+with col2:
+    
+    if st.button(
+        "📊\n\nDASHBOARD\n\nInsights & Statistics",
+        use_container_width=True,
+        key="home_dashboard"
+    ):
+        st.switch_page("pages/2_Dashboard.py")
+    
     if st.button(
         "📄\n\nREPORTS\n\nDownload Reports",
         use_container_width=True,
         key="home_reports"
     ):
-        st.switch_page("pages/Reports.py")
+        st.switch_page("pages/5_Reports.py")
+
+
+
+
+with col3:
+    
+    if st.button(
+        "📈\n\nANALYTICS\n\nAnalyze your spending",
+        use_container_width=True,
+        key="home_analytics"
+    ):
+        st.switch_page("pages/3_Analytics.py")
 
 
     if st.button(
@@ -450,7 +473,7 @@ with col3:
         use_container_width=True,
         key="home_settings"
     ):
-        st.switch_page("pages/Settings.py")
+        st.switch_page("pages/6_Settings.py")
 
 
 

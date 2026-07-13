@@ -49,3 +49,15 @@ def get_user():
         return session.user
 
     return None
+def reset_password(email):
+    try:
+        supabase.auth.reset_password_email(
+            email,
+            {
+                "redirect_to": "https://habitcost.streamlit.app"
+            }
+        )
+        return True, "Password reset email sent!"
+    
+    except Exception as e:
+        return False, str(e)
