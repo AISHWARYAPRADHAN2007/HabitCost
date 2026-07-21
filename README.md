@@ -190,3 +190,44 @@ Run the application
 ```bash
 streamlit run app.py
 ```
+
+## Screenshots
+
+### LOGIN
+![Login](assets/screenshots/login.png)
+
+### Home
+![Home](assets/screenshots/HOMEPAGE.PNG)
+
+
+### Habits
+![Habits](assets/screenshots/HABITS.PNG)
+![Habits](assets/screenshots/HABITS2.PNG)
+
+### Dashboard
+![Dashboard](assets/screenshots/DASHBOARD1.PNG)
+![Dashboard](assets/screenshots/DASHBOARD2.PNG)
+![Dashboard](assets/screenshots/DASHBOARD3.PNG)
+![Dashboard](assets/screenshots/DASHBOARD4.PNG)
+![Dashboard](assets/screenshots/DASHBOARD5.PNG)
+
+### Analytics
+![Analytics](assets/screenshots/ANALYTICS1.PNG)
+![Analytics](assets/screenshots/ANALYTICS2.PNG)
+![Analytics](assets/screenshots/ANALYTICS3.PNG)
+
+### Investments
+![Investments](assets/screenshots/INVESTMENTS1.PNG)
+![Investments](assets/screenshots/INVESTMENT2.PNG)
+![Investments](assets/screenshots/INVESTMENT3.PNG)
+![Investments](assets/screenshots/INVESTMENT4.PNG)
+
+### Reports
+![Reports](assets/screenshots/REPORT1.PNG)
+![Reports](assets/screenshots/REPORT2.PNG)
+![Reports](assets/screenshots/REPORT3.PNG)
+![Reports](assets/screenshots/REPORT4.PNG)
+
+### Settings
+![Settings](assets/screenshots/SETTINGS1.PNG)
+![Settings](assets/screenshots/SETTINGS2.PNG)
