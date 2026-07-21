@@ -1,17 +1,15 @@
 import streamlit as st
 import pandas as pd
+import plotly.express as px
+
 from auth import logout
 from auth import get_user
-
 from database import (
     supabase,
     get_habits,
     get_profile,
 )
 from calculations import monthly_cost
-
-if st.button("🏠 Home"):
-    st.switch_page("app.py")
 
 
 # ==========================================
@@ -21,10 +19,26 @@ if st.button("🏠 Home"):
 st.set_page_config(
     page_title="Investments",
     page_icon="💹",
-    layout="wide"
+    layout="wide",
 )
 
 
+def load_css():
+    with open("assets/style.css", encoding="utf-8") as css_file:
+        st.markdown(
+            f"<style>{css_file.read()}</style>",
+            unsafe_allow_html=True,
+        )
+
+
+load_css()
+
+
+if st.button(
+    "🏠 Home",
+    key="investments_home_button",
+):
+    st.switch_page("app.py")
 # ==========================================
 # LOGIN
 # ==========================================
@@ -82,25 +96,24 @@ df["monthly_cost"] = df.apply(
 # ==========================================
 # TITLE
 # ==========================================
-
-st.title("💹 Investments")
-
-st.caption(
-    "See how reducing small habits today can build wealth tomorrow."
+st.markdown(
+    """
+<div class="investments-page-header"><div class="investments-page-eyebrow">WEALTH BUILDER</div><div class="investments-page-title">💹 Investments</div><div class="investments-page-subtitle">Turn small habit reductions into meaningful savings, long-term investments, and future financial goals.</div></div>
+""",
+    unsafe_allow_html=True,
 )
-
-st.divider()
-
 # ==========================================
 # SAVINGS SIMULATOR
 # ==========================================
 
 st.divider()
 
-st.subheader(
-    "💰 Savings Simulator"
+st.markdown(
+    """
+<div class="section-header"><div class="section-title">💰 Savings Simulator</div><div class="section-subtitle">Experiment with reducing a habit to see how much money you could save every day, month, and year.</div></div>
+""",
+    unsafe_allow_html=True,
 )
-
 
 habit_options = df["habit"].tolist()
 
@@ -137,41 +150,45 @@ monthly_saving = (
 yearly_saving = monthly_saving * 12
 
 
-col1, col2 = st.columns(2)
-
-
-with col1:
-
-    st.metric(
-        "Monthly Saving",
-        f"₹ {monthly_saving:,.0f}"
-    )
-
-
-with col2:
-
-    st.metric(
-        "Yearly Saving",
-        f"₹ {yearly_saving:,.0f}"
-    )
 daily_saving = monthly_saving / 30
 
-st.metric(
-    "☕ Daily Saving",
-    f"₹ {daily_saving:,.0f}"
-)
+c1, c2, c3 = st.columns(3)
+
+with c1:
+    st.markdown(
+        f"""
+<div class="investment-metric-card investment-green"><div class="investment-metric-icon">📅</div><div class="investment-metric-label">Monthly Saving</div><div class="investment-metric-value">₹ {monthly_saving:,.0f}</div><div class="investment-metric-note">Saved every month</div></div>
+""",
+        unsafe_allow_html=True,
+    )
+
+with c2:
+    st.markdown(
+        f"""
+<div class="investment-metric-card investment-blue"><div class="investment-metric-icon">💰</div><div class="investment-metric-label">Yearly Saving</div><div class="investment-metric-value">₹ {yearly_saving:,.0f}</div><div class="investment-metric-note">Saved every year</div></div>
+""",
+        unsafe_allow_html=True,
+    )
+
+with c3:
+    st.markdown(
+        f"""
+<div class="investment-metric-card investment-orange"><div class="investment-metric-icon">☕</div><div class="investment-metric-label">Daily Saving</div><div class="investment-metric-value">₹ {daily_saving:,.0f}</div><div class="investment-metric-note">Average per day</div></div>
+""",
+        unsafe_allow_html=True,
+    )
 st.divider()
 # ==========================================
 # FUTURE VALUE PREDICTION
 # ==========================================
 
-st.divider()
 
-st.subheader(
-    "🔮 Future Value Prediction"
+st.markdown(
+    """
+<div class="section-header"><div class="section-title">🔮 Future Value Prediction</div><div class="section-subtitle">Estimate how your monthly savings can grow through consistent investing and compound returns.</div></div>
+""",
+    unsafe_allow_html=True,
 )
-
-
 monthly_saving = monthly_saving
 
 
@@ -206,53 +223,57 @@ future_value = (
     )
 )
 
-
-col1, col2 = st.columns(2)
-
-
-with col1:
-
-    st.metric(
-        "Monthly Investment",
-        f"₹ {monthly_saving:,.0f}"
-    )
-
-
-with col2:
-
-    st.metric(
-        "Future Value",
-        f"₹ {future_value:,.0f}"
-    )
 amount_invested = monthly_saving * months
-
 interest_earned = future_value - amount_invested
 
-st.write("")
+c1, c2 = st.columns(2)
 
-col1, col2 = st.columns(2)
-
-with col1:
-
-    st.metric(
-        "💰 Total Invested",
-        f"₹ {amount_invested:,.0f}"
+with c1:
+    st.markdown(
+        f"""
+<div class="future-value-card future-blue"><div class="future-icon">💸</div><div class="future-label">Monthly Investment</div><div class="future-value">₹ {monthly_saving:,.0f}</div><div class="future-note">Invested every month</div></div>
+""",
+        unsafe_allow_html=True,
     )
 
-with col2:
-
-    st.metric(
-        "📈 Interest Earned",
-        f"₹ {interest_earned:,.0f}"
+with c2:
+    st.markdown(
+        f"""
+<div class="future-value-card future-green"><div class="future-icon">🚀</div><div class="future-label">Future Value</div><div class="future-value">₹ {future_value:,.0f}</div><div class="future-note">Projected portfolio value</div></div>
+""",
+        unsafe_allow_html=True,
     )
+
+c3, c4 = st.columns(2)
+
+with c3:
+    st.markdown(
+        f"""
+<div class="future-value-card future-purple"><div class="future-icon">🏦</div><div class="future-label">Total Invested</div><div class="future-value">₹ {amount_invested:,.0f}</div><div class="future-note">Your own contributions</div></div>
+""",
+        unsafe_allow_html=True,
+    )
+
+with c4:
+    st.markdown(
+        f"""
+<div class="future-value-card future-orange"><div class="future-icon">📈</div><div class="future-label">Interest Earned</div><div class="future-value">₹ {interest_earned:,.0f}</div><div class="future-note">Growth from compounding</div></div>
+""",
+        unsafe_allow_html=True,
+    )
+
 # ==========================================
 # INVESTMENT GROWTH CHART
 # ==========================================
 
 st.divider()
 
-st.subheader("📈 Investment Growth")
-
+st.markdown(
+    """
+<div class="section-header"><div class="section-title">📈 Investment Growth</div><div class="section-subtitle">Visualize how consistent monthly investing can compound over time.</div></div>
+""",
+    unsafe_allow_html=True,
+)
 
 growth = []
 
@@ -283,18 +304,81 @@ for year in range(1, years + 1):
 
 growth_df = pd.DataFrame(growth)
 
-st.line_chart(
-    growth_df.set_index("Year")
+fig = px.line(
+    growth_df,
+    x="Year",
+    y="Value",
+    markers=True,
 )
 
+fig.update_traces(
+    line=dict(
+        width=4,
+        color="#22C55E",
+    ),
+    marker=dict(
+        size=9,
+        color="#4ADE80",
+        line=dict(
+            width=2,
+            color="#F8FAFC",
+        ),
+    ),
+    fill="tozeroy",
+    fillcolor="rgba(34,197,94,0.08)",
+    hovertemplate="<b>Year %{x}</b><br>₹ %{y:,.0f}<extra></extra>",
+)
+
+fig.update_layout(
+    height=460,
+    margin=dict(
+        l=10,
+        r=10,
+        t=25,
+        b=10,
+    ),
+    paper_bgcolor="rgba(0,0,0,0)",
+    plot_bgcolor="rgba(0,0,0,0)",
+    font=dict(
+        color="#CBD5E1",
+    ),
+    xaxis=dict(
+        title="Investment Year",
+        showgrid=False,
+        dtick=1,
+        tickfont=dict(
+            color="#CBD5E1",
+        ),
+    ),
+    yaxis=dict(
+        title="Portfolio Value (₹)",
+        gridcolor="rgba(148,163,184,0.12)",
+        zeroline=False,
+        tickprefix="₹ ",
+        tickformat=",",
+    ),
+    hovermode="x unified",
+)
+
+st.plotly_chart(
+    fig,
+    use_container_width=True,
+    config={
+        "displayModeBar": False,
+    },
+)
 # ==========================================
 # SCENARIO COMPARISON
 # ==========================================
 
 st.divider()
 
-st.subheader("📊 Investment Scenarios")
-
+st.markdown(
+    """
+<div class="section-header"><div class="section-title">📊 Investment Scenarios</div><div class="section-subtitle">Compare how the same monthly investment could grow across different time horizons.</div></div>
+""",
+    unsafe_allow_html=True,
+)
 
 comparison = []
 
@@ -321,15 +405,18 @@ for y in [5, 10, 15, 20]:
     )
 
 
-comparison_df = pd.DataFrame(
-    comparison
-)
+comparison_df = pd.DataFrame(comparison)
 
-st.dataframe(
-    comparison_df,
-    hide_index=True,
-    use_container_width=True
-)
+scenario_cols = st.columns(len(comparison_df))
+
+for index, row in comparison_df.iterrows():
+    with scenario_cols[index]:
+        st.markdown(
+            f"""
+<div class="scenario-card"><div class="scenario-icon">⏳</div><div class="scenario-years">{row["Years"]} Years</div><div class="scenario-label">Projected Value</div><div class="scenario-value">{row["Future Value"]}</div><div class="scenario-note">Based on {rate}% annual return</div></div>
+""",
+            unsafe_allow_html=True,
+        )
 
 # ==========================================
 # INVESTMENT INSIGHT
@@ -337,33 +424,27 @@ st.dataframe(
 
 st.divider()
 
-st.subheader("💡 Investment Insight")
+st.markdown(
+    """
+<div class="section-header"><div class="section-title">💡 Investment Insight</div><div class="section-subtitle">See the long-term impact of reducing a habit and investing the savings consistently.</div></div>
+""",
+    unsafe_allow_html=True,
+)
 
 
-st.success(
-
+st.markdown(
     f"""
-Reducing **{selected_habit}** by **{reduction}%**
-
-saves you **₹ {monthly_saving:,.0f} every month**.
-
-If you invest that amount for **{years} years**
-at **{rate}% annual return**,
-
-it could grow to
-
-# 💰 ₹ {future_value:,.0f}
-"""
+<div class="investment-insight-card"><div class="investment-insight-icon">💡</div><div class="investment-insight-title">Your Investment Opportunity</div><div class="investment-insight-text">Reducing <strong>{selected_habit}</strong> by <strong>{reduction}%</strong> saves you <strong>₹ {monthly_saving:,.0f}</strong> every month.</div><div class="investment-insight-text">Investing that amount for <strong>{years} years</strong> at an expected <strong>{rate}% annual return</strong> could grow your money into:</div><div class="investment-insight-result">💰 ₹ {future_value:,.0f}</div></div>
+""",
+    unsafe_allow_html=True,
 )
 profile = get_profile(user_email)
 if profile:
-
-    st.success(
+    st.markdown(
         f"""
-Your current goal is **{profile['goal']}**.
-
-Keep investing consistently to get closer to achieving it!
-"""
+<div class="investment-goal-card"><div class="investment-goal-title">🎯 Current Goal</div><div class="investment-goal-name">{profile['goal']}</div><div class="investment-goal-text">Stay consistent with your investments to move closer to achieving this goal.</div></div>
+""",
+        unsafe_allow_html=True,
     )
 # ==========================================
 # WHAT COULD THIS BECOME?
@@ -371,7 +452,12 @@ Keep investing consistently to get closer to achieving it!
 
 st.divider()
 
-st.subheader("🎯 What Could This Become?")
+st.markdown(
+    """
+<div class="section-header"><div class="section-title">🎯 What Could This Become?</div><div class="section-subtitle">Translate your future investment value into real-world goals and possibilities.</div></div>
+""",
+    unsafe_allow_html=True,
+)
 
 
 ideas = []
@@ -415,19 +501,30 @@ if future_value >= 5000000:
 
 
 if ideas:
-
-    st.success(
-        "Instead of spending on this habit, your money could become:"
+    st.markdown(
+        f"""
+<div class="possibility-highlight"><div class="possibility-highlight-icon">✨</div><div><div class="possibility-highlight-title">Your money could become something meaningful</div><div class="possibility-highlight-text">A projected value of <strong>₹ {future_value:,.0f}</strong> can unlock these possibilities:</div></div></div>
+""",
+        unsafe_allow_html=True,
     )
 
-    for item in ideas:
+    possibility_cols = st.columns(2)
 
-        st.write(item)
+    for index, item in enumerate(ideas):
+        with possibility_cols[index % 2]:
+            st.markdown(
+                f"""
+<div class="possibility-card"><div class="possibility-number">{index + 1}</div><div class="possibility-text">{item}</div></div>
+""",
+                unsafe_allow_html=True,
+            )
 
 else:
-
-    st.info(
-        "Every investment starts small. Keep investing consistently!"
+    st.markdown(
+        """
+<div class="possibility-empty"><div class="possibility-empty-icon">🌱</div><div class="possibility-empty-title">Every investment starts small</div><div class="possibility-empty-text">Keep investing consistently and your future possibilities will continue to grow.</div></div>
+""",
+        unsafe_allow_html=True,
     )
 profile = get_profile(user_email)
 
@@ -437,74 +534,64 @@ if profile:
 
     st.divider()
 
-    st.subheader("🎯 Goal Progress")
+    st.markdown(
+    """
+    <div class="section-header"><div class="section-title">🎯 Goal Progress</div><div class="section-subtitle">Stay focused on your financial objective and see how consistent investing supports it.</div></div>
+    """,
+       unsafe_allow_html=True,
+    )
 
-    st.success(
-        f"Current Goal: **{goal}**"
+    st.markdown(
+    f"""
+    <div class="goal-progress-card"><div class="goal-progress-icon">🎯</div><div class="goal-progress-label">Current Financial Goal</div><div class="goal-progress-title">{goal}</div></div>
+    """,
+       unsafe_allow_html=True,
     )
 
     if goal == "Save More":
-
-        st.info(
-            "💰 Continue investing consistently to grow your savings."
-        )
+        goal_tip = "💰 Continue investing consistently to grow your savings."
 
     elif goal == "Reduce Spending":
-
-        st.info(
-            "📉 Every unnecessary habit you reduce moves you closer to this goal."
-        )
+        goal_tip = "📉 Every unnecessary habit you reduce moves you closer to this goal."
 
     elif goal == "Build Emergency Fund":
-
-        st.info(
-            "🛟 Build at least 6 months of expenses for financial security."
-        )
+       goal_tip = "🛟 Build at least 6 months of expenses for financial security."
 
     elif goal == "Travel":
-
-        st.info(
-            "✈️ Your investments can become your next vacation fund."
-        )
+       goal_tip = "✈️ Your investments can become your next vacation fund."
 
     elif goal == "Buy a Laptop":
-
-        st.info(
-            "💻 Keep investing until you can buy your laptop without debt."
-        )
+       goal_tip = "💻 Keep investing until you can buy your laptop without debt."
 
     elif goal == "Buy a Vehicle":
-
-        st.info(
-            "🏍️ Your monthly investments can become a vehicle down payment."
-        )
+       goal_tip = "🏍️ Your monthly investments can become a vehicle down payment."
 
     elif goal == "Buy a House":
-
-        st.info(
-            "🏠 Long-term investing is a great way to build a home down payment."
-        )
+       goal_tip = "🏠 Long-term investing is a great way to build a home down payment."
 
     elif goal == "Invest More":
-
-        st.info(
-            "📈 Increase your SIP whenever your income increases."
-        )
+       goal_tip = "📈 Increase your SIP whenever your income increases."
 
     elif goal == "Education":
-
-        st.info(
-            "🎓 Your investments can fund future studies and certifications."
-        )
+       goal_tip = "🎓 Your investments can fund future studies and certifications."
 
     else:
+       goal_tip = "🌟 Stay consistent. Every investment brings you closer to your goal."
 
-        st.info(
-            "🌟 Stay consistent. Every investment brings you closer to your goal."
-        )
+    st.markdown(
+    f"""
+<div class="goal-progress-tip">{goal_tip}</div>
+""",
+    unsafe_allow_html=True,
+    )
 st.divider()
 
-st.subheader("📚 Investment Tips")
+st.markdown(
+    """
+<div class="section-header"><div class="section-title">📚 Investment Tips</div><div class="section-subtitle">Simple principles that help your investments grow steadily over time.</div></div>
+""",
+    unsafe_allow_html=True,
+)
 
 tips = [
     "💡 Invest every month, even if it's a small amount.",
@@ -514,8 +601,19 @@ tips = [
     "🎯 Stay consistent rather than trying to time the market."
 ]
 
-for tip in tips:
+tip_cols = st.columns(2)
 
-    st.info(tip)
-st.divider()
-
+for index, tip in enumerate(tips):
+    with tip_cols[index % 2]:
+        st.markdown(
+            f"""
+<div class="investment-tip-card"><div class="investment-tip-number">{index + 1}</div><div class="investment-tip-text">{tip}</div></div>
+""",
+            unsafe_allow_html=True,
+        )
+st.markdown(
+    """
+<div class="investments-footer"><div class="investments-footer-brand">HabitCost Investments</div><div class="investments-footer-tagline">Reduce wasteful habits. Build meaningful wealth.</div><div class="investments-footer-note">All projections are estimates and actual returns may vary.</div></div>
+""",
+    unsafe_allow_html=True,
+)

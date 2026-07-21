@@ -21,6 +21,8 @@ from calculations import (
 )
 
 
+
+
 # ==========================================
 # PAGE CONFIG
 # ==========================================
@@ -30,6 +32,16 @@ st.set_page_config(
     page_icon="💸",
     layout="wide"
 )
+
+def load_css():
+    with open("assets/style.css", encoding="utf-8") as css_file:
+        st.markdown(
+            f"<style>{css_file.read()}</style>",
+            unsafe_allow_html=True,
+        )
+
+
+load_css()
 
 if st.button("🏠 Home"):
     st.switch_page("app.py")
@@ -96,12 +108,12 @@ if "habit_added" not in st.session_state:
 # ==========================================
 # TITLE
 # ==========================================
-
-st.title("💸 HabitCost")
-
-st.caption("Track your daily spending habits")
-
-st.divider()
+st.markdown(
+    """
+<div class="habits-page-header"><div class="habits-page-eyebrow">HABIT TRACKER</div><div class="habits-page-title">💸 Your Habits</div><div class="habits-page-subtitle">Track daily choices and understand their financial impact.</div></div>
+""",
+    unsafe_allow_html=True,
+)
 
 # ==========================================
 # CALENDAR
@@ -117,6 +129,7 @@ with left:
             st.session_state.year -= 1
         else:
             st.session_state.month -= 1
+
 
         st.rerun()
 
@@ -150,14 +163,19 @@ st.write("")
 
 
 # Weekday headers
-days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
+days = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
 
 cols = st.columns(7)
 
 for col, day in zip(cols, days):
-
-    col.markdown(f"**{day}**")
-
+    col.markdown(
+        f"""
+<div class="calendar-day-header">
+{day}
+</div>
+""",
+        unsafe_allow_html=True,
+    )
 
 # Calendar Grid
 month = calendar.monthcalendar(
@@ -284,32 +302,83 @@ progress = (
     if total_count > 0
     else 0
 )
+st.markdown("### Daily Summary")
 
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-    st.metric(
-        "💰 Planned Today",
-        f"₹ {planned_today:,.0f}"
+    st.markdown(
+        f"""
+        <div class="habit-summary-card habit-summary-purple">
+            <div class="habit-summary-icon">💰</div>
+            <div class="habit-summary-label">Planned Today</div>
+            <div class="habit-summary-value">₹ {planned_today:,.0f}</div>
+            <div class="habit-summary-note">Expected spending</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
 
 with col2:
-    st.metric(
-        "💸 Spent Today",
-        f"₹ {spent_today:,.0f}"
+    st.markdown(
+        f"""
+        <div class="habit-summary-card habit-summary-orange">
+            <div class="habit-summary-icon">💸</div>
+            <div class="habit-summary-label">Spent Today</div>
+            <div class="habit-summary-value">₹ {spent_today:,.0f}</div>
+            <div class="habit-summary-note">Completed habit cost</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
 
 with col3:
-    st.metric(
-        "✅ Completed",
-        f"{completed_count}/{total_count}"
+    st.markdown(
+        f"""
+        <div class="habit-summary-card habit-summary-green">
+            <div class="habit-summary-icon">✅</div>
+            <div class="habit-summary-label">Completed</div>
+            <div class="habit-summary-value">
+                {completed_count}/{total_count}
+            </div>
+            <div class="habit-summary-note">Habits finished today</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
 
 with col4:
-    st.metric(
-        "📈 Progress",
-        f"{progress*100:.0f}%"
+    st.markdown(
+        f"""
+        <div class="habit-summary-card habit-summary-blue">
+            <div class="habit-summary-icon">📈</div>
+            <div class="habit-summary-label">Progress</div>
+            <div class="habit-summary-value">
+                {progress * 100:.0f}%
+            </div>
+            <div class="habit-summary-note">Daily completion rate</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+
     )
+st.markdown(
+    f"""
+<div style="
+display:flex;
+justify-content:space-between;
+align-items:center;
+font-size:18px;
+font-weight:700;
+color:#E2E8F0;
+margin-bottom:10px;
+">
+<span>📈 Daily Progress</span>
+<span>{progress*100:.0f}%</span>
+</div>
+""",
+    unsafe_allow_html=True,
+)
 
 st.progress(progress)
 
@@ -321,8 +390,12 @@ st.divider()
 if st.session_state.habit_added:
     st.success("✅ Habit added successfully!")
     st.session_state.habit_added = False
-with st.expander("➕ Add New Habit"):
-
+with st.expander("➕ Add New Habit", expanded=False):
+    
+    st.caption(
+        "Create a habit and start tracking its financial impact."
+    )
+    
     with st.form("add_habit_form"):
 
         habit_name = st.text_input("Habit Name")
@@ -337,7 +410,7 @@ with st.expander("➕ Add New Habit"):
                 "Health",
                 "Subscriptions",
                 "Education",
-                "Other"
+                "Other" 
             ]
         )
 
@@ -488,22 +561,14 @@ else:
 
         category_monthly_cost = category_habits["Monthly Cost"].sum()
 
+        
         st.markdown(
             f"""
-            <div style="font-size:32px;font-weight:700;">
-                {habit_icons.get(category,"💸")} {category}
-                <span style="font-size:18px;color:gray;">
-                    ({len(category_habits)} habits)
-                </span>
-            </div>
-
-            <div style="font-size:18px;">
-                Monthly impact:
-                <b>₹ {category_monthly_cost:,.0f}</b>
-            </div>
-            """,
-            unsafe_allow_html=True
+        <div style="font-size:32px;font-weight:700;color:white;text-shadow:0 0 18px rgba(139,92,246,.20);">{habit_icons.get(category,"💸")} {category} <span style="font-size:18px;color:#94A3B8;">({len(category_habits)} habits)</span></div><div style="font-size:18px;color:#CBD5E1;margin-top:6px;">Monthly impact: <b>₹ {category_monthly_cost:,.0f}</b></div>
+        """,
+        unsafe_allow_html=True,
         )
+            
 
         with st.expander("View Habits", expanded=True):
 

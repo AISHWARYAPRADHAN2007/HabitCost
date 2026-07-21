@@ -31,9 +31,22 @@ st.set_page_config(
     page_icon="📊",
     layout="wide"
 )
-if st.button("🏠 Home"):
+if st.button(
+    "🏠 Home",
+    key="dashboard_home_button",
+    use_container_width=False,
+):
     st.switch_page("app.py")
 
+def load_css():
+    with open("assets/style.css", encoding="utf-8") as css_file:
+        st.markdown(
+            f"<style>{css_file.read()}</style>",
+            unsafe_allow_html=True,
+        )
+
+
+load_css()
 
 
 # ==========================================
@@ -124,137 +137,56 @@ top_category_amount = (
 # TITLE
 # ==========================================
 
-st.title("📊 Financial Dashboard")
-
-st.caption(
-    "Understand where your money goes and how habits impact your future."
+st.markdown(
+    """
+<div class="dashboard-page-header"><div class="dashboard-page-eyebrow">FINANCIAL INSIGHTS</div><div class="dashboard-page-title">📊 Financial Dashboard</div><div class="dashboard-page-subtitle">Understand where your money goes and how your habits shape your financial future.</div></div>
+""",
+    unsafe_allow_html=True,
 )
-
-
-st.divider()
 
 
 # ==========================================
 # TOP SUMMARY CARDS
 # ==========================================
 
-st.markdown(
-    """
-    <style>
 
-    .card {
 
-        padding:20px;
-        border-radius:18px;
-        border:1px solid #ddd;
-        text-align:center;
-        margin-bottom:10px;
-
-    }
-
-    .card-title {
-
-        font-size:18px;
-        color:#666;
-
-    }
-
-    .card-value {
-
-        font-size:30px;
-        font-weight:700;
-
-    }
-
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
+st.markdown("### Overview")
 
 col1, col2, col3, col4 = st.columns(4)
 
-
 with col1:
-
     st.markdown(
         f"""
-        <div class="card">
-
-        <div class="card-title">
-        💸 Monthly Spending
-        </div>
-
-        <div class="card-value">
-        ₹ {total_monthly_spending:,.0f}
-        </div>
-
-        </div>
-        """,
-        unsafe_allow_html=True
+<div class="dashboard-metric dashboard-metric-orange"><div class="dashboard-metric-icon">💸</div><div class="dashboard-metric-label">Monthly Spending</div><div class="dashboard-metric-value">₹ {total_monthly_spending:,.0f}</div><div class="dashboard-metric-note">Estimated monthly impact</div></div>
+""",
+        unsafe_allow_html=True,
     )
-
 
 with col2:
-
     st.markdown(
         f"""
-        <div class="card">
-
-        <div class="card-title">
-        📌 Habits Tracked
-        </div>
-
-        <div class="card-value">
-        {total_habits}
-        </div>
-
-        </div>
-        """,
-        unsafe_allow_html=True
+<div class="dashboard-metric dashboard-metric-blue"><div class="dashboard-metric-icon">📌</div><div class="dashboard-metric-label">Habits Tracked</div><div class="dashboard-metric-value">{total_habits}</div><div class="dashboard-metric-note">Active spending habits</div></div>
+""",
+        unsafe_allow_html=True,
     )
-
 
 with col3:
-
     st.markdown(
         f"""
-        <div class="card">
-
-        <div class="card-title">
-        🔥 Biggest Category
-        </div>
-
-        <div class="card-value">
-        {top_category}
-        </div>
-
-        </div>
-        """,
-        unsafe_allow_html=True
+<div class="dashboard-metric dashboard-metric-purple"><div class="dashboard-metric-icon">🔥</div><div class="dashboard-metric-label">Biggest Category</div><div class="dashboard-metric-value dashboard-metric-text">{top_category}</div><div class="dashboard-metric-note">Largest spending category</div></div>
+""",
+        unsafe_allow_html=True,
     )
-
 
 with col4:
-
     st.markdown(
         f"""
-        <div class="card">
-
-        <div class="card-title">
-        💰 Category Cost
-        </div>
-
-        <div class="card-value">
-        ₹ {top_category_amount:,.0f}
-        </div>
-
-        </div>
-        """,
-        unsafe_allow_html=True
+<div class="dashboard-metric dashboard-metric-green"><div class="dashboard-metric-icon">💰</div><div class="dashboard-metric-label">Category Cost</div><div class="dashboard-metric-value">₹ {top_category_amount:,.0f}</div><div class="dashboard-metric-note">Monthly category total</div></div>
+""",
+        unsafe_allow_html=True,
     )
 
-
 # ==========================================
 # MONTHLY SNAPSHOT
 # ==========================================
@@ -262,10 +194,21 @@ with col4:
 # MONTHLY SNAPSHOT
 # ==========================================
 
-st.subheader("📅 Monthly Snapshot")
+st.markdown(
+    """
+<div class="section-header">
+    <div class="section-title">📅 Monthly Snapshot</div>
+    <div class="section-subtitle">
+        Save a summary of your current month's financial habits for future comparison.
+    </div>
+</div>
+""",
+    unsafe_allow_html=True,
+)
 
-with st.container():
-
+with st.container(key="snapshot_section"):
+    
+    
     if "snapshot_saved" not in st.session_state:
         st.session_state.snapshot_saved = False
 
@@ -276,8 +219,10 @@ with st.container():
 
 
     if st.button(
-        "💾 Save Monthly Snapshot",
-        use_container_width=True
+    "💾 Save Monthly Snapshot",
+    use_container_width=True,
+    key="snapshot_button",
+
     ):
 
         add_month_snapshot(
@@ -290,6 +235,9 @@ with st.container():
 
         st.session_state.snapshot_saved = True
         st.rerun()
+        
+    
+    
 
 # ==========================================
 # FINANCIAL HEALTH SCORE
@@ -298,7 +246,7 @@ with st.container():
 # ==========================================
 # FINANCIAL HEALTH SCORE
 # ==========================================
-
+st.markdown('<div class="dashboard-section-card">', unsafe_allow_html=True)
 st.subheader("🧠 Financial Health Score")
 
 subscription_cost = (
@@ -309,6 +257,8 @@ subscription_cost = (
 )
 
 score = 100
+
+st.markdown("</div>", unsafe_allow_html=True)
 
 
 # Budget overspending penalty
@@ -360,38 +310,70 @@ if subscription_cost > 3000:
 
 score = max(0, min(score,100))
 
-col1, col2 = st.columns(2)
-
+col1, col2 = st.columns([1.2, 1])
 
 with col1:
 
-    st.metric(
-        "Financial Health Score",
-        f"{score}/100"
-    )
+    if score >= 80:
+        color = "#22C55E"
+        status = "Excellent"
+        emoji = "🟢"
 
+    elif score >= 60:
+        color = "#F59E0B"
+        status = "Good"
+        emoji = "🟡"
+
+    else:
+        color = "#EF4444"
+        status = "Needs Attention"
+        emoji = "🔴"
+
+    st.markdown(
+        f"""
+<div class="health-card">
+    <div class="health-score" style="color:{color};">{score}</div>
+    <div class="health-outof">/100</div>
+    <div class="health-status">{emoji} {status}</div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
 
 with col2:
 
-    if score >= 80:
-        message = "🟢 Excellent financial habits"
+    st.markdown(
+        f"""
+<div class="health-info">
+<h4>Financial Health</h4>
 
-    elif score >= 60:
-        message = "🟡 Good, but can improve"
+<p>Your score is calculated using:</p>
 
-    else:
-        message = "🔴 Needs attention"
+<ul>
+<li>Monthly spending</li>
+<li>Budget utilization</li>
+<li>Subscription costs</li>
+<li>Habit tracking consistency</li>
+</ul>
+
+</div>
+""",
+        unsafe_allow_html=True,
+    )
 
 
-    st.write(message)
+    
 # ==========================================
 # MONTHLY BUDGET TRACKER
 # ==========================================
 
 st.divider()
 
-st.subheader(
-    "📅 Monthly Budget Tracker"
+st.markdown(
+    """
+<div class="section-header"><div class="section-title">📅 Monthly Budget Tracker</div><div class="section-subtitle">Set a monthly limit and track how much of your budget has already been used.</div></div>
+""",
+    unsafe_allow_html=True,
 )
 
 profile = get_profile(user_email)
@@ -445,44 +427,68 @@ if new_budget > 0:
         spent / new_budget
     )
 
+    st.markdown("### Budget Overview")
 
     col1, col2, col3 = st.columns(3)
 
-
     with col1:
-        st.metric(
-            "Budget",
-            f"₹ {new_budget:,.0f}"
-        )
+        st.markdown(
+            f"""
+    <div class="budget-card budget-blue">
+        <div class="budget-label">💳 Budget</div>
+        <div class="budget-value">₹ {new_budget:,.0f}</div>
+    </div>
+    """,
+            unsafe_allow_html=True,
+       )
 
     with col2:
-        st.metric(
-            "Spent",
-            f"₹ {spent:,.0f}"
-        )
-
+        st.markdown(
+           f"""
+    <div class="budget-card budget-orange">
+        <div class="budget-label">💸 Spent</div>
+        <div class="budget-value">₹ {spent:,.0f}</div>
+    </div>
+    """,
+           unsafe_allow_html=True,
+       )
 
     with col3:
-        st.metric(
-            "Remaining",
-            f"₹ {remaining:,.0f}"
-        )
+        st.markdown(
+           f"""
+    <div class="budget-card budget-green">
+        <div class="budget-label">💚 Remaining</div>
+        <div class="budget-value">₹ {remaining:,.0f}</div>
+    </div>
+    """,
+            unsafe_allow_html=True,
+       )
 
-
-    st.progress(
-        min(progress,1)
+    st.markdown(
+       f"""
+    <div class="budget-progress-header">
+       <span>Budget Used</span>
+       <span>{min(progress*100,100):.0f}%</span>
+    </div>
+    """,
+       unsafe_allow_html=True,
     )
+
+    st.progress(min(progress, 1.0))
 
 # ==========================================
 # ACHIEVEMENTS
 # ==========================================
+st.markdown('<div class="dashboard-section-card">', unsafe_allow_html=True)
 
 st.divider()
 
-st.subheader(
-    "🏆 Achievements"
+st.markdown(
+    """
+<div class="section-header"><div class="section-title">🏆 Achievements</div><div class="section-subtitle">Unlock milestones as you track habits, control spending, and improve your financial discipline.</div></div>
+""",
+    unsafe_allow_html=True,
 )
-
 
 all_logs = get_all_habit_logs(
     user_email
@@ -532,75 +538,36 @@ for badge in achievements:
 
             st.markdown(
                 f"""
-                <div style="
-                    padding:20px;
-                    border-radius:20px;
-                    border:2px solid #4CAF50;
-                    text-align:center;
-                    margin-bottom:20px;
-                ">
-
-                <h1>
-                🏆
-                </h1>
-
-                <h3>
-                {badge['title']}
-                </h3>
-
-                <p>
-                {badge['description']}
-                </p>
-
-                <b>
-                UNLOCKED ✅
-                </b>
-
-                </div>
-                """,
-                unsafe_allow_html=True
+            <div class="achievement-card achievement-unlocked">
+                <div class="achievement-icon">🏆</div>
+                <div class="achievement-title">{badge['title']}</div>
+                <div class="achievement-description">{badge['description']}</div>
+                <div class="achievement-badge">UNLOCKED ✓</div>
+            </div>
+            """,
+               unsafe_allow_html=True,
             )
-
 
         else:
 
             st.markdown(
                 f"""
-                <div style="
-                    padding:20px;
-                    border-radius:20px;
-                    border:2px solid #cccccc;
-                    text-align:center;
-                    margin-bottom:20px;
-                ">
-
-                <h1>
-                🔒
-                </h1>
-
-                <h3>
-                {badge['title']}
-                </h3>
-
-                <p>
-                {badge['description']}
-                </p>
-
-                <b>
-                LOCKED
-                </b>
-
-                </div>
-                """,
-                unsafe_allow_html=True
+            <div class="achievement-card achievement-locked">
+                <div class="achievement-icon">🔒</div>
+                <div class="achievement-title">{badge['title']}</div>
+                <div class="achievement-description">{badge['description']}</div>
+                <div class="achievement-badge locked">LOCKED</div>
+            </div>
+            """,
+                unsafe_allow_html=True,
             )
-
-
     index += 1
+st.markdown("</div>", unsafe_allow_html=True) 
+
 # ==========================================
 # PERSONALIZED RECOMMENDATIONS
 # ==========================================
-
+st.markdown('<div class="dashboard-section-card">', unsafe_allow_html=True)
 st.divider()
 
 st.subheader(
@@ -621,104 +588,40 @@ recommendations = generate_recommendations(
     goal,
 )
     
-
-
-
 for rec in recommendations:
 
     if rec["type"] == "warning":
-
-        st.markdown(
-            f"""
-            <div style="
-                padding:18px;
-                border-radius:18px;
-                border-left:8px solid orange;
-                background-color:#262626;
-                color:white;
-                border-left:8px solid #f5a623;
-                margin-bottom:15px;
-            ">
-
-            <h3 style="color:white;">
-            💡 Money Saving Tip
-            </h3>
-
-            <p style="color:#dddddd;">
-            {rec['message']}
-            </p>
-
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
+        card_class = "recommendation-warning"
+        icon = "💡"
+        title = "Money Saving Tip"
 
     elif rec["type"] == "success":
-
-        st.markdown(
-            f"""
-            <div style="
-                padding:18px;
-                border-radius:18px;
-                border-left:8px solid green;
-                background-color:#262626;
-                color:white;
-                border-left:8px solid #4CAF50;
-                margin-bottom:15px;
-            ">
-
-            <h3 style="color:white;">
-            🎯 Smart Move
-            </h3>
-
-            <p style="color:#dddddd;">
-            {rec['message']}
-            </p>
-
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
+        card_class = "recommendation-success"
+        icon = "🎯"
+        title = "Smart Move"
 
     elif rec["type"] == "danger":
-
-        st.markdown(
-            f"""
-            <div style="
-                padding:18px;
-                border-radius:18px;
-                border-left:8px solid red;
-                background-color:#262626;
-                color:white;
-                border-left:8px solid #ff4b4b;
-                margin-bottom:15px;
-            ">
-
-            <h3 style="color:white;">
-            🚨 Attention Needed
-            </h3>
-
-            <p style="color:#dddddd;">
-            {rec['message']}
-            </p>
-
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
+        card_class = "recommendation-danger"
+        icon = "🚨"
+        title = "Attention Needed"
 
     else:
+        card_class = "recommendation-info"
+        icon = "📌"
+        title = "Recommendation"
 
-        st.info(
-            rec["message"]
-        )
+    st.markdown(
+        f"""
+<div class="recommendation-card {card_class}"><div class="recommendation-icon">{icon}</div><div class="recommendation-content"><div class="recommendation-title">{title}</div><div class="recommendation-message">{rec['message']}</div></div></div>
+""",
+        unsafe_allow_html=True,
+    )
+st.markdown("</div>", unsafe_allow_html=True)
+
 # ==========================================
 # ANALYTICS PREVIEW
 # ==========================================
-
+st.markdown('<div class="dashboard-section-card">', unsafe_allow_html=True)
 st.divider()
 
 st.subheader("📈 Analytics Preview")
@@ -733,31 +636,112 @@ with preview_col1:
         .sort_values(ascending=False)
     )
 
-    st.bar_chart(category_preview)
+    preview_df = (
+        category_preview.reset_index()
+    )
+
+    preview_df.columns = [
+        "Category",
+        "Monthly Cost"
+    ]
+
+    fig = px.bar(
+        preview_df,
+        x="Category",
+        y="Monthly Cost",
+        color="Monthly Cost",
+        text_auto=".0f",
+        color_continuous_scale=[
+        "#3B82F6",
+        "#8B5CF6",
+        "#F97316",
+        ],
+    )
+
+    fig.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+
+        margin=dict(
+            l=10,
+            r=10,
+            t=20,
+            b=10,
+        ),
+
+        font=dict(
+        color="#E2E8F0",
+        family="Inter"
+        ),
+
+        coloraxis_showscale=False,
+
+        xaxis_title="",
+        yaxis_title="",
+    )
+
+    fig.update_xaxes(
+        showgrid=False,
+        zeroline=False,
+    )
+
+    fig.update_yaxes(
+        gridcolor="rgba(255,255,255,.08)",
+        zeroline=False,
+    )
+
+    fig.update_traces(
+        marker_line_width=0,
+    )
+
+    st.plotly_chart(
+        fig,
+        use_container_width=True
+    )
 
 with preview_col2:
 
-    st.metric(
-        "Top Category",
-        top_category
+    st.markdown(
+        f"""
+    <div class="analytics-side-card analytics-blue">
+        <div class="analytics-label">🏆 Top Category</div>
+        <div class="analytics-value">{top_category}</div>
+    </div>
+    """,
+        unsafe_allow_html=True,
     )
 
-    st.metric(
-        "Monthly Cost",
-        f"₹ {top_category_amount:,.0f}"
+    st.markdown(
+        f"""
+    <div class="analytics-side-card analytics-green">
+        <div class="analytics-label">💰 Monthly Cost</div>
+        <div class="analytics-value">₹ {top_category_amount:,.0f}</div>
+    </div>
+    """,
+        unsafe_allow_html=True,
     )
 
-    st.info(
-        "See detailed spending insights in the 📈 Analytics page."
+    st.markdown(
+        """
+    <div class="analytics-note">
+       📈 Explore the Analytics page for detailed trends, category insights, and spending patterns.
+    </div>
+    """,
+        unsafe_allow_html=True,
     )
-    
+st.markdown("</div>", unsafe_allow_html=True)
 # ==========================================
 # SPENDING VISUALIZATION
 # ==========================================
-
+st.markdown('<div class="dashboard-section-card">', unsafe_allow_html=True)
 st.divider()
 
-st.subheader("📊 Spending Visualization")
+st.markdown(
+    """
+<div class="section-header"><div class="section-title">📊 Spending Insights</div><div class="section-subtitle">Visual breakdown of your monthly expenses across categories.</div></div>
+""",
+    unsafe_allow_html=True,
+)
 
 category_chart = (
     df.groupby("category")["monthly_cost"]
@@ -775,17 +759,79 @@ col1, col2 = st.columns(2)
 with col1:
 
     fig = px.bar(
-        category_chart,
-        x="Category",
-        y="Monthly Cost",
-        color="Category",
-        text_auto=True,
-        title="Monthly Spending by Category"
+    category_chart,
+    x="Category",
+    y="Monthly Cost",
+    color="Monthly Cost",
+    text_auto=".0f",
+    color_continuous_scale=[
+        "#3B82F6",
+        "#8B5CF6",
+        "#F97316",
+    ],
+    )
+
+    fig.update_layout(
+    title="Monthly Spending by Category",
+    title_font=dict(
+        size=21,
+        color="#F8FAFC",
+    ),
+    paper_bgcolor="rgba(0,0,0,0)",
+    plot_bgcolor="rgba(0,0,0,0)",
+    font=dict(
+        color="#CBD5E1",
+    ),
+    margin=dict(
+        l=20,
+        r=20,
+        t=60,
+        b=20,
+    ),
+    xaxis_title=None,
+    yaxis_title="Monthly Cost",
+    coloraxis_showscale=False,
+    hoverlabel=dict(
+        bgcolor="#0F172A",
+        font_color="#F8FAFC",
+    ),
+    )
+
+    fig.update_xaxes(
+    showgrid=False,
+    zeroline=False,
+    tickfont=dict(
+        color="#CBD5E1",
+    ),
+    )
+
+    fig.update_yaxes(
+    gridcolor="rgba(255,255,255,0.08)",
+    zeroline=False,
+    tickprefix="₹ ",
+    tickfont=dict(
+        color="#94A3B8",
+    ),
+    )
+
+    fig.update_traces(
+    marker_line_width=0,
+    texttemplate="₹ %{y:,.0f}",
+    textposition="outside",
+    cliponaxis=False,
+    hovertemplate=(
+        "<b>%{x}</b><br>"
+        "Monthly Cost: ₹ %{y:,.0f}"
+        "<extra></extra>"
+    ),
     )
 
     st.plotly_chart(
-        fig,
-        use_container_width=True
+    fig,
+    use_container_width=True,
+    config={
+        "displayModeBar": False,
+    },
     )
 
 with col2:
@@ -794,19 +840,86 @@ with col2:
         category_chart,
         names="Category",
         values="Monthly Cost",
-        hole=0.5,
-        title="Spending Distribution"
+        hole=0.66,
+        color_discrete_sequence=[
+            "#8B5CF6",
+            "#3B82F6",
+            "#22C55E",
+            "#F97316",
+            "#EF4444",
+            "#06B6D4",
+            "#FACC15",
+            "#EC4899",
+        ],
+    )
+
+    fig.update_layout(
+        title="Spending Distribution",
+        title_font=dict(
+            size=21,
+            color="#F8FAFC",
+        ),
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(
+            color="#CBD5E1",
+        ),
+        margin=dict(
+            l=15,
+            r=15,
+            t=60,
+            b=20,
+        ),
+        legend=dict(
+            orientation="h",
+            yanchor="top",
+            y=-0.08,
+            xanchor="center",
+            x=0.5,
+            font=dict(
+                color="#CBD5E1",
+                size=12,
+            ),
+        ),
+        hoverlabel=dict(
+            bgcolor="#0F172A",
+            font_color="#F8FAFC",
+        ),
+    )
+
+    fig.update_traces(
+        textinfo="percent",
+        textposition="inside",
+        textfont=dict(
+            color="#F8FAFC",
+            size=13,
+        ),
+        marker=dict(
+            line=dict(
+                color="#0F172A",
+                width=3,
+            ),
+        ),
+        hovertemplate=(
+            "<b>%{label}</b><br>"
+            "Monthly Cost: ₹ %{value:,.0f}<br>"
+            "Share: %{percent}"
+            "<extra></extra>"
+        ),
     )
 
     st.plotly_chart(
         fig,
-        use_container_width=True
+        use_container_width=True,
+        config={
+            "displayModeBar": False,
+        },
     )
-
+st.markdown("</div>", unsafe_allow_html=True)
 # ==========================================
 # TOP SAVINGS OPPORTUNITIES
 # ==========================================
-
+st.markdown('<div class="dashboard-section-card">', unsafe_allow_html=True)
 st.divider()
 
 st.subheader("💡 Top Savings Opportunities")
@@ -830,21 +943,54 @@ display_df["Monthly Saving Potential"] = display_df[
     "Monthly Saving Potential"
 ].map(lambda x: f"₹ {x:,.0f}")
 
-st.dataframe(
-    display_df,
-    hide_index=True,
-    use_container_width=True
+st.markdown(
+    """
+<div class="section-header">
+    <div class="section-title">💡 Top Saving Opportunities</div>
+    <div class="section-subtitle">
+        Habits with the highest monthly saving potential.
+    </div>
+</div>
+""",
+    unsafe_allow_html=True,
 )
 
+for i, row in display_df.iterrows():
+
+    st.markdown(
+        f"""
+<div class="saving-row"><div class="saving-rank">#{i+1}</div><div class="saving-main"><div class="saving-habit">{row['Habit']}</div><div class="saving-category">{row['Category']}</div></div><div class="saving-amount">{row['Monthly Saving Potential']}</div></div>
+""",
+        unsafe_allow_html=True,
+    )
 highest = top_habits.iloc[0]
 
-st.success(
+st.markdown(
     f"""
-💰 If you reduce **{highest['habit']}** by just **50%**, you could save approximately **₹ {highest['monthly_cost']/2:,.0f} every month**.
+<div class="featured-saving">
 
-See the **💹 Investments** page to estimate how much this could grow over time.
-"""
+<div class="featured-title">
+💰 Biggest Saving Opportunity
+</div>
+
+<div class="featured-text">
+Reducing <b>{highest['habit']}</b> by just <b>50%</b> could save approximately
+<b>₹ {highest['monthly_cost']/2:,.0f}</b> every month.
+</div>
+
+<div class="featured-footer">
+See the Investments page to estimate long-term growth.
+</div>
+
+</div>
+""",
+    unsafe_allow_html=True,
 )
 
-st.divider()
-
+st.markdown(
+    """
+<div class="dashboard-footer"><div class="footer-brand">💸 HabitCost</div><div class="footer-tagline">Track • Improve • Invest</div><div class="footer-note">Built with Streamlit and Supabase</div></div>
+""",
+    unsafe_allow_html=True,
+)
+st.markdown("</div>", unsafe_allow_html=True)
