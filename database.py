@@ -96,7 +96,7 @@ def get_profile(email):
     if response.data:
         return response.data[0]
 
-    return None
+    return {}
 
 
 def save_profile(email, income, currency,  investment_rate, monthly_budget, goal, notes,):

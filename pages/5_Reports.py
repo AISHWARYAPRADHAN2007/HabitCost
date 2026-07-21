@@ -452,7 +452,16 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-monthly_budget = profile.get("monthly_budget", 0) or 0
+if profile:
+    monthly_budget = float(profile.get("monthly_budget") or 0)
+    goal = float(profile.get("goal") or 0)
+    income = float(profile.get("income") or 0)
+    investment_rate = float(profile.get("investment_rate") or 12)
+else:
+    monthly_budget = 0
+    goal = 0
+    income = 0
+    investment_rate = 12
 goal = profile.get("goal", "No goal selected")
 
 budget_used = (
