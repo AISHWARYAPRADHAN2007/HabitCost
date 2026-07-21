@@ -442,7 +442,7 @@ profile = get_profile(user_email)
 if profile:
     st.markdown(
         f"""
-<div class="investment-goal-card"><div class="investment-goal-title">🎯 Current Goal</div><div class="investment-goal-name">{profile['goal']}</div><div class="investment-goal-text">Stay consistent with your investments to move closer to achieving this goal.</div></div>
+<div class="investment-goal-card"><div class="investment-goal-title">🎯 Current Goal</div><div class="investment-goal-name">{profile.get("goal", 0)}</div><div class="investment-goal-text">Stay consistent with your investments to move closer to achieving this goal.</div></div>
 """,
         unsafe_allow_html=True,
     )
@@ -530,7 +530,7 @@ profile = get_profile(user_email)
 
 if profile:
 
-    goal = profile["goal"]
+    goal = profile.get("goal", 0)
 
     st.divider()
 

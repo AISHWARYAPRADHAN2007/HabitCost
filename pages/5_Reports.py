@@ -695,14 +695,14 @@ story.append(
 
 story.append(
     Paragraph(
-        f"Monthly Budget: ₹ {profile['monthly_budget']:,.0f}",
+        f"Monthly Budget: ₹ {float(profile.get("monthly_budget") or 0):,.0f}",
         styles["Normal"],
     )
 )
 
 story.append(
     Paragraph(
-        f"Financial Goal: {profile['goal']}",
+        f"Financial Goal: {profile.get("goal", 0)}",
         styles["Normal"],
     )
 )
