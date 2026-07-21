@@ -397,11 +397,11 @@ if st.button("Save Budget"):
     
     save_profile(
         user_email,
-        profile["income"],
-        profile["currency"],
-        profile["investment_rate"],
+        profile.get("income", 0),
+        profile.get("currency", "INR"),
+        profile.get("investment_rate", 12),
         new_budget,
-        profile["goal"],
+        profile.get("goal", ""),
         profile.get("notes", "")
     )
 
