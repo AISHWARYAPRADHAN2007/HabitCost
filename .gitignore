@@ -1,11 +1,12 @@
-# Streamlit secrets
+# Private Streamlit credentials
 .streamlit/secrets.toml
 
-# Environment files
+# Other secret files
+secrets.toml
 .env
 .env.*
 
-# Python cache
+# Python
 __pycache__/
 *.py[cod]
 
@@ -13,13 +14,8 @@ __pycache__/
 venv/
 .venv/
 
-# IDE files
+# Editor and OS files
 .vscode/
 .idea/
-
-# OS files
 .DS_Store
 Thumbs.db
-
-# Logs
-*.log
