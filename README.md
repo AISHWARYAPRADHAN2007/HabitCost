@@ -1,52 +1,192 @@
-# 💸 The Real Cost of Habits
+<p align="center">
+  <img src="assets/logo.png" width="170">
+</p>
 
-A Streamlit app that turns everyday habits (coffee, Uber, takeout, subscriptions...)
-into numbers that actually register: cost per week/month/year, hours spent per year,
-and what that money could have grown into if invested instead.
+<h1 align="center">
+💸 HabitCost
+</h1>
 
-## Features
-- Editable table (add/remove/edit any habit, right in the browser)
-- Auto-calculated weekly / monthly / yearly / 5-year cost
-- Time cost in hours and days per year
-- "Opportunity cost" projection — what the money could be worth if invested
-- Charts: cost by habit, cost by category, time by habit, growth-over-time
-- Export/import your habits as CSV so your data isn't lost between sessions
+<p align="center">
+Track habits • Understand spending • Build wealth
+</p>
 
-## Run locally
+<p align="center">
 
-```bash
-git clone <your-repo-url>
-cd habit-cost-calculator
-pip install -r requirements.txt
-streamlit run app.py
+![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)
+
+![Streamlit](https://img.shields.io/badge/Streamlit-1.x-red?logo=streamlit)
+
+![Supabase](https://img.shields.io/badge/Supabase-Backend-green?logo=supabase)
+
+![License](https://img.shields.io/badge/License-MIT-yellow)
+
+</p>
+
+## About
+
+HabitCost is a modern personal finance application that helps users understand the real financial impact of everyday habits.
+
+Instead of simply tracking expenses, HabitCost analyzes recurring spending, estimates long-term investment opportunities, generates insightful reports, and provides personalized financial recommendations.
+
+The application was developed using **Python**, **Streamlit**, and **Supabase**, with a premium dark-themed interface inspired by modern SaaS products.
+
+# Features
+
+✅ Secure Authentication
+
+- Login
+- Sign Up
+- Password Reset
+
+---
+
+✅ Habit Tracking
+
+- Daily habit tracking
+- Monthly calendar
+- Recurring expenses
+- Automatic & manual habits
+
+---
+
+✅ Dashboard
+
+- Monthly spending
+- Financial score
+- Budget tracking
+- Smart recommendations
+
+---
+
+✅ Analytics
+
+- Spending trends
+- Category analysis
+- Interactive charts
+- Monthly insights
+
+---
+
+✅ Investment Calculator
+
+- Future value calculator
+- Investment growth projection
+- Opportunity cost visualization
+
+---
+
+✅ Reports
+
+- Download PDF reports
+- Download CSV reports
+- Executive summary
+- Spending history
+
+---
+
+✅ Settings
+
+- Budget management
+- Financial goals
+- Personal notes
+- Currency support
+
+# Tech Stack
+
+Frontend
+
+- Streamlit
+- HTML
+- CSS
+
+Backend
+
+- Supabase
+
+Programming Language
+
+- Python
+
+Libraries
+
+- Pandas
+- Plotly
+- ReportLab
+
+Authentication
+
+- Supabase Auth
+
+Database
+
+- PostgreSQL (Supabase)
+
+# Project Structure
+
+```text
+HabitCost/
+
+│
+
+├── app.py
+
+├── auth.py
+
+├── database.py
+
+├── calculations.py
+
+├── requirements.txt
+
+├── README.md
+
+│
+
+├── assets/
+
+│ ├── logo.png
+
+│ └── style.css
+
+│
+
+├── pages/
+
+│ ├── Habits
+
+│ ├── Dashboard
+
+│ ├── Analytics
+
+│ ├── Investments
+
+│ ├── Reports
+
+│ └── Settings
 ```
 
-The app opens at `http://localhost:8501`.
+# Installation
 
-## Deploy for free (GitHub + Streamlit Community Cloud)
+Clone the repository
 
-1. Create a new GitHub repo and push these files (`app.py`, `requirements.txt`, `README.md`).
-2. Go to [share.streamlit.io](https://share.streamlit.io) and sign in with GitHub.
-3. Click **"New app"**, pick your repo/branch, and set the main file to `app.py`.
-4. Click **Deploy** — you'll get a public URL in about a minute.
+```bash
+git clone https://github.com/YOUR_USERNAME/HabitCost.git
+```
 
-Any time you push new commits to the repo, the deployed app updates automatically.
+Go inside the folder
 
-## How the math works
-- **Weekly cost** = cost per occurrence × times per week
-- **Yearly cost** = weekly cost × 52
-- **Time cost** = minutes per occurrence × times per week, converted to hours/days per year
-- **Investment projection** uses the future value of a recurring weekly contribution,
-  compounded weekly at your chosen annual rate — i.e. "what if this money went into
-  an index fund instead of a coffee cup."
+```bash
+cd HabitCost
+```
 
-## Notes on persistence
-Streamlit Community Cloud apps don't have a database by default, and session state
-resets between visits/devices. Use the **Export CSV** / **Load CSV** buttons in the
-sidebar to save your habits and bring them back next time.
+Install dependencies
 
-## Ideas to extend
-- Add authentication + a real database (e.g. Supabase, SQLite) for true persistence
-- Add a "goal" mode: "cut this habit in half — see the new yearly total"
-- Add category budgets/limits with visual warnings
-- Mobile-friendly quick-add widget for logging habits as they happen
+```bash
+pip install -r requirements.txt
+```
+
+Run the application
+
+```bash
+streamlit run app.py
+```

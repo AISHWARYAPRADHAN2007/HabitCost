@@ -4892,3 +4892,23 @@ div.st-key-settings_home_button button:hover {
     font-size: 12px;
 }
 
+/* Hide Streamlit deployment toolbar */
+[data-testid="stToolbar"] {
+    display: none;
+}
+
+[data-testid="stDecoration"] {
+    display: none;
+}
+
+#MainMenu {
+    visibility: hidden;
+}
+
+footer {
+    visibility: hidden;
+}
+
+header {
+    visibility: hidden;
+}
